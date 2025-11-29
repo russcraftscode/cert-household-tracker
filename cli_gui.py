@@ -153,7 +153,7 @@ def display_yes_no(query, row_max, header=None):
     print("Make selection: <yes/no>")
 
 
-def prompt_user(query, user_options=None, input_format=None, row_limit=60, header=None, required=True):
+def prompt_user(query, user_options=None, input_format=None, row_limit=60, header=None, required=True, table=None):
     """
     Prompts the user for input. Chooses the appropriate display type for the question
     :param query:  to ask the user
@@ -187,6 +187,7 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
             return None
         # required questions cannot be blank
         if user_response == "":
+            clear_screen()
             print("This is a required question.")
             continue
         # Numeric format questions must be answered with just the digits 0-9
@@ -195,6 +196,7 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
                 # Return the properly formatted response as an int value
                 return int(user_response)
             else:
+                clear_screen()
                 print("Please respond with digits only. No letters, commas, or other symbols.")
                 continue
         # Yes/No questions must have a response that either starts with a 'y' or a 'n'. Case does not matter
@@ -205,6 +207,7 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
                 elif user_response[0].lower() == 'n':
                     return False
                 else:
+                    clear_screen()
                     print("Please respond with \"yes\" or \"no\" only. No other letters")
                     continue
         # Menu questions must have a response that matches an available option
@@ -213,6 +216,7 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
                 sel_number = int(user_response)
                 if sel_number > 0 and sel_number <= len(user_options):
                     return sel_number
+            clear_screen()
             print("Please enter only the number of your selection with no other input")
             continue
         # Any remaining questions are free-form response, so just return the input
@@ -226,9 +230,12 @@ def main():
     print("Running in dev mode")
 
     test_header = "This is question 1"
-    test_question = ("This is my question. there are many like it, but this one is mine." +
-                     " I must guard my question with my life. I must master my question as I must master my life." +
-                     " Until I have nothing left to ask, and there is only answers.")
+    test_question = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut"+
+                     " labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco"+
+                     " laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in "+
+                     "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat"+
+                     " non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+
     test_options = ["alpha", "beta", "gamma"]
 
     line_split("abc", 2)
