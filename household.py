@@ -7,6 +7,7 @@ This class maintains all the data of a single household
 """
 
 import pandas as pd
+import cli_gui
 
 class Household:
     def __init__(
@@ -83,6 +84,84 @@ class Household:
         # If all checks pass
         return True
 
+    def ask_questions(self, scr_w):
+        """
+        Asks the user the battery of questions to generate a new household object
+        :param scr_w: the max width of the display
+        :return: none
+        """
+        req = "Required Questions"
+        # Ask the required questions
+        self.adults = cli_gui.prompt_user(
+            "How many adults live in your household?",
+            header=req, input_format="numeric", row_limit=scr_w)
+        self.children = cli_gui.prompt_user(
+            "How many children live in your household?",
+            header=req, input_format="numeric", row_limit=scr_w)
+        self.pets = cli_gui.prompt_user(
+            "Do you have pets?",
+            header=req, input_format="y/n", row_limit=scr_w)
+        if self.pets:
+            self.dogs = cli_gui.prompt_user(
+                "Do you have any dogs?",
+                header=req, input_format="y/n", row_limit=scr_w)
+        else:# Cannot have dogs if there are no pets
+            self.dogs = False
+        self.crit_meds = cli_gui.prompt_user(
+            "Does anyone in the household have critical medications?",
+            header=req, input_format="y/n", row_limit=scr_w)
+        if self.crit_meds:
+            self.ref_meds = cli_gui.prompt_user(
+                "Do any of these medications need to be refrigerated?",
+                header=req, input_format="y/n", row_limit=scr_w)
+        else: # Cannot have temp sensitive critical meds if there are no critical meds
+            self.ref_meds = False
+        self.special_needs = cli_gui.prompt_user(
+            "Does anyone in this household have special needs that would require extra assistance in an evacuation?",
+            header=req, input_format="y/n", row_limit=scr_w)
+        self.gas_tank = cli_gui.prompt_user(
+            "Does the house have a large propane tank? Anything larger than the standard size used in a gas grill?",
+            header=req, input_format="y/n", row_limit=scr_w)
+        self.gas_line = cli_gui.prompt_user(
+            "Does the house have gas hookup for cooking or gas heat?",
+            header=req, input_format="y/n", row_limit=scr_w)
+        self.ad_first = cli_gui.prompt_user(
+            "What is the 1st line of the mailing address? Enter it as you would on an envelope,"+
+            " street number and then street name",
+            header=req, required=False, row_limit=scr_w)
+        self.ad_second = cli_gui.prompt_user(
+            "What is the 2nd line of the mailing address? Enter it as you would on an envelope,"+
+            " town name, then a comma, then state and zip code",
+            header=req, required=False, row_limit=scr_w)
+
+        # optional questions
+        opt = "Optional Question ( Enter nothing to skip )"  # header for the optional questions
+        self.med_training = cli_gui.prompt_user(
+            "Does anyone in this household have medical training and would be able to render assistance in an "
+            "emergency?",
+            header=opt, input_format="y/n", row_limit=scr_w, required=False)
+        self.email = cli_gui.prompt_user(
+            "What is the best email address to update this household about active emergencies and natural disasters?",
+            header=opt, row_limit=scr_w, required=False)
+        self.phone = cli_gui.prompt_user(
+            "What is the best phone number to contact this household in the event of an active emergency and natural "
+            "disaster?",
+            header=opt, row_limit=scr_w, required=False)
+        self.know_nbr = cli_gui.prompt_user(
+            "Do the members of this household know their neighbors?",
+            header=opt, input_format="y/n", row_limit=scr_w, required=False)
+        self.key_nbr = cli_gui.prompt_user(
+            "Does this household have a key to their neighbor's house?",
+            header=opt, input_format="y/n", row_limit=scr_w, required=False)
+        self.news_ltr = cli_gui.prompt_user(
+            "Would you like to receive the CERT newsletter to stay updated with information beyond currenlty active "
+            "emergencies and natural disasters?",
+            header=opt, input_format="y/n", row_limit=scr_w, required=False)
+        self.contact = cli_gui.prompt_user(
+            "May CERT use this contact information for anything other than communications directly related to active "
+            "emergencies and natural disasters?",
+            header=opt, input_format="y/n", row_limit=scr_w, required=False)
+
     def to_dataframe(self) -> pd.DataFrame:
         """
         Creates a panda's dataframe row of this object
@@ -113,6 +192,8 @@ class Household:
         }
         df = pd.DataFrame([dict])
         return df
+
+
 
 def main():
     """

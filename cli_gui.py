@@ -164,6 +164,7 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
     :param required: is the user required to give an answer. Defaults to true
     :return: the response of the user. Type will be determined by 'format' parameter. Defaults to string
     """
+    # TODO: add format checkers for email, phone, and address
     clear_screen()
     # Determine appropriate display type
     display_type = "open-ended"
