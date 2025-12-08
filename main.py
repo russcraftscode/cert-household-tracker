@@ -10,9 +10,17 @@ import pprint as pp
 import pandas as pd
 import cli_utils as cli
 from cli_utils import NA
-import household as hh
+#import household as hh
 from household import Household
 import sys
+
+# ------------------
+# Constants
+# ------------------
+
+SQLITE_FILENAME = "cert.db" # TODO: consider making this configurable by the user
+I_CSV_FILENAME = "import.csv" # TODO: this MUST be configurable by the user
+O_CSV_FILENAME = "output.csv" # TODO: this MUST be configurable by the user
 
 
 # ------------------
@@ -55,43 +63,48 @@ def df_to_options(df: pd.DataFrame) -> list[str]:
     return df['address'].tolist()
 
 
-def get_household_from_df(address: str, df: pd.DataFrame) -> hh.Household:
+def get_household_from_df(address: str, df: pd.DataFrame) -> Household:
     """
     Scans the dataframe for a household with a matching address. If one is found it returns
     a Household object from that row
-    :param address: "[stree number] [street name]/[city],[2ltr state] [5 number zip]"
+    :param address: "[street number] [street name]/[city],[2 letter state] [5 number zip]"
     :param df: Dataframe built from household object data
     :return: if match found: household object, if no match: None
     """
-    # Find the row with the matching address
+    # Find the row with the matching address. Should only be 1 row
     matching_rows = df[df['address'] == address]
 
     if matching_rows.empty:
         print("Error: get_household_from_df given address not in dataframe", file=sys.stderr)
-        return None
+        return df # return the original dataframe
 
     # Addresses are unqiue, so the 1st one should be the only one
     row = matching_rows.iloc[0]
 
     # Create a new Household object from the row data
-    household = hh.Household()
+    household = Household()
     household.load_data(row)
     return household
 
 
-def remove_household_from_df(address: str, df: pd.DataFrame) -> bool:
+def remove_household_from_df(address: str, df: pd.DataFrame) -> Household:
     """
     Scans the dataframe for a household with a matching address. If one is found it removes
-    that row from the dataframe, if no match is found then it returns False
-    :param address: "[stree number] [street name]/[city],[2ltr state] [5 number zip]"
+    that row from the dataframe, if no match is found then it returns None
+    :param address: "[street number] [street name]/[city],[2 letter state] [5 number zip]"
     :param df: Dataframe to remove row from
     :return: if match found: true, if no match: false
     """
-    # Find the row with the matching address
-    delete_row_indexs = df.index[df['address'] == address]
-    print(delete_row_indexs)
+    # Find the row with the matching address. Should only be 1 row
+    delete_row_index = df.index[df['address'] == address]
+    print(delete_row_index)
 
-    return False
+    if delete_row_index.empty:
+        print("Error: remove_household_from_df given address not in dataframe", file=sys.stderr)
+        return df # return the original dataframe
+
+    # drop the 1st (and should be only) row that was identified to be removed
+    return df.drop(delete_row_index[0])
 
 
 hh0 = Household(
@@ -114,7 +127,7 @@ hh1 = Household(
     know_nbr="t", key_nbr="f", news_ltr="t", contact="f"
 )
 
-hh2 = hh.Household(
+hh2 = Household(
     adults="3", children="1", pets="f", dogs="f",
     crit_meds="f", ref_meds="f", special_needs="t",
     gas_tank="f", gas_line="t",
@@ -124,7 +137,7 @@ hh2 = hh.Household(
     know_nbr="f", key_nbr="t", news_ltr="f", contact="t"
 )
 
-hh3 = hh.Household(
+hh3 = Household(
     adults="2", children="3", pets="t", dogs="f",
     crit_meds="f", ref_meds="f", special_needs="f",
     gas_tank="f", gas_line="f",
@@ -219,6 +232,13 @@ cli.display_menu ("Pick one:", options=options, row_max=60)
 
 print(f"You selected #{user_choice}\n{get_household_from_df(options[user_choice], test)}")
 
+print (test)
+test = remove_household_from_df(options[0], test)
+
+print(test      )
+
+test.to_csv( I_CSV_FILENAME, index=False)
+
 
 sys.exit(0)
 
@@ -238,80 +258,7 @@ while True:
     print(main_options.index("Add a household"))
 
     if user_input - 1 == main_options.index("Add a household"):
-        new_hh = hh.Household()
-        """print(f"hh is valid {new_hh.validate_data()}") # DEBUG
-        req = "Required Questions"
-        # Ask the required questions
-        new_hh.adults = cli_gui.prompt_user(
-            "How many adults live in your household?",
-            header=req, input_format="numeric", row_limit=scr_w)
-        new_hh.children = cli_gui.prompt_user(
-            "How many children live in your household?",
-            header=req, input_format="numeric", row_limit=scr_w)
-        new_hh.pets = cli_gui.prompt_user(
-            "Do you have pets?",
-            header=req, input_format="y/n", row_limit=scr_w)
-        if new_hh.pets:
-            new_hh.dogs = cli_gui.prompt_user(
-                "Do you have any dogs?",
-                header=req, input_format="y/n", row_limit=scr_w)
-        else:# Cannot have dogs if there are no pets
-            new_hh.dogs = False
-        new_hh.crit_meds = cli_gui.prompt_user(
-            "Does anyone in the household have critical medications?",
-            header=req, input_format="y/n", row_limit=scr_w)
-        if new_hh.crit_meds:
-            new_hh.ref_meds = cli_gui.prompt_user(
-                "Do any of these medications need to be refrigerated?",
-                header=req, input_format="y/n", row_limit=scr_w)
-        else: # Cannot have temp sensitive critical meds if there are no critical meds
-            new_hh.ref_meds = False
-        new_hh.special_needs = cli_gui.prompt_user(
-            "Does anyone in this household have special needs that would require extra assistance in an evacuation?",
-            header=req, input_format="y/n", row_limit=scr_w)
-        new_hh.gas_tank = cli_gui.prompt_user(
-            "Does the house have a large propane tank? Anything larger than the standard size used in a gas grill?",
-            header=req, input_format="y/n", row_limit=scr_w)
-        new_hh.gas_line = cli_gui.prompt_user(
-            "Does the house have gas hookup for cooking or gas heat?",
-            header=req, input_format="y/n", row_limit=scr_w)
-        new_hh.ad_first = cli_gui.prompt_user(
-            "What is the 1st line of the mailing address? Enter it as you would on an envelope,"+
-            " street number and then street name",
-            header=req, required=False, row_limit=scr_w)
-        new_hh.ad_second = cli_gui.prompt_user(
-            "What is the 2nd line of the mailing address? Enter it as you would on an envelope,"+
-            " town name, then a comma, then state and zip code",
-            header=req, required=False, row_limit=scr_w)
-
-        # optional questions
-        opt = "Optional Question ( Enter nothing to skip )"  # header for the optional questions
-        new_hh.med_training = cli_gui.prompt_user(
-            "Does anyone in this household have medical training and would be able to render assistance in an "
-            "emergency?",
-            header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        new_hh.email = cli_gui.prompt_user(
-            "What is the best email address to update this household about active emergencies and natural disasters?",
-            header=opt, row_limit=scr_w, required=False)
-        new_hh.phone = cli_gui.prompt_user(
-            "What is the best phone number to contact this household in the event of an active emergency and natural "
-            "disaster?",
-            header=opt, row_limit=scr_w, required=False)
-        new_hh.know_nbr = cli_gui.prompt_user(
-            "Do the members of this household know their neighbors?",
-            header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        new_hh.key_nbr = cli_gui.prompt_user(
-            "Does this household have a key to their neighbor's house?",
-            header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        new_hh.news_ltr = cli_gui.prompt_user(
-            "Would you like to receive the CERT newsletter to stay updated with information beyond currenlty active "
-            "emergencies and natural disasters?",
-            header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        new_hh.contact = cli_gui.prompt_user(
-            "May CERT use this contact information for anything other than communications directly related to active "
-            "emergencies and natural disasters?",
-            header=opt, input_format="y/n", row_limit=scr_w, required=False)"""
-
+        new_hh = Household()
         new_hh.ask_questions(scr_w)
 
         df = new_hh.to_dataframe()

@@ -239,7 +239,7 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
 
 def main():
     """
-    This function is just used for dev testing
+    This function is just used for dev demoing
     """
     print("Running in dev mode")
 

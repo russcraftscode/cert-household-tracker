@@ -296,27 +296,6 @@ class Household:
             return False
 
         # load the data
-        # self.adults = int(series['adults'])
-        # self.children = int(series['children'])
-        # self.pets = str_to_bool(series['pets'])
-        # self.dogs = str_to_bool(series['dogs'])
-        # self.crit_meds = str_to_bool(series['crit_meds'])
-        # self.ref_meds = str_to_bool(series['ref_meds'])
-        # self.special_needs = str_to_bool(series['special_needs'])
-        # self.gas_tank = str_to_bool(series['gas_tank'])
-        # self.gas_line = str_to_bool(series['gas_line'])
-        # self.adrs_number = series['adrs_number']
-        # self.adrs_street = series['adrs_street']
-        # self.adrs_city = series['adrs_city']
-        # self.adrs_state = series['adrs_state']
-        # self.adrs_zip = series['adrs_zip']
-        # self.med_training = str_to_bool(series['med_training'])
-        # self.email = series['email']
-        # self.phone = series['phone']
-        # self.know_nbr = str_to_bool(series['know_nbr'])
-        # self.key_nbr = str_to_bool(series['key_nbr'])
-        # self.news_ltr = str_to_bool(series['news_ltr'])
-        # self.contact = str_to_bool(series['contact'])
         self.adults = series['adults']
         self.children = series['children']
         self.pets = series['pets']
@@ -387,10 +366,12 @@ class Household:
         else:  # Cannot have temp sensitive critical meds if there are no critical meds
             self.ref_meds = False
         self.special_needs = cli.prompt_user(
-            "Does anyone in this household have special needs that would require extra assistance in an evacuation?",
+            "Does anyone in this household have special needs that would " +
+            "require extra assistance in an evacuation?",
             header=req, input_format="y/n", row_limit=scr_w)
         self.gas_tank = cli.prompt_user(
-            "Does the house have a large propane tank? Anything larger than the standard size used in a gas grill?",
+            "Does the house have a large propane tank? Anything larger " +
+            "than the standard size used in a gas grill?",
             header=req, input_format="y/n", row_limit=scr_w)
         self.gas_line = cli.prompt_user(
             "Does the house have gas line hookup, such as a gas stove, gas fireplace, or gas heat?",
@@ -419,15 +400,16 @@ class Household:
         # optional questions
         opt = "Add New Household: Optional Question ( Enter nothing to skip )"  # header for the optional questions
         self.med_training = cli.prompt_user(
-            "Does anyone in this household have medical training and would be able to render assistance in an "
+            "Does anyone in this household have medical training and would be able to render assistance in an " +
             "emergency?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
         self.email = cli.prompt_user(
-            "What is the best email address to update this household about active emergencies and natural disasters?",
+            "What is the best email address to update this household about active emergencies and "+
+            "natural disasters?",
             header=opt, row_limit=scr_w, required=False)
         self.phone = cli.prompt_user(
-            "What is the best phone number to contact this household in the event of an active emergency and natural "
-            "disaster? Enter just the digits of a 10 digit phone number, including area code. No symbols",
+            "What is the best phone number to contact this household in the event of an active emergency " +
+            "and natural disaster? Enter just the digits of a 10 digit phone number, including area code. No symbols",
             header=opt, input_format="numeric", input_length=10, row_limit=scr_w, required=False)
         self.know_nbr = cli.prompt_user(
             "Do the members of this household know their neighbors?",
@@ -436,12 +418,12 @@ class Household:
             "Does this household have a key to their neighbor's house?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
         self.news_ltr = cli.prompt_user(
-            "Would you like to receive the CERT newsletter to stay updated with information beyond currenlty active "
-            "emergencies and natural disasters?",
+            "Would you like to receive the CERT newsletter to stay updated with information beyond currently " +
+            "active emergencies and natural disasters?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
         self.contact = cli.prompt_user(
-            "May CERT use this contact information for anything other than communications directly related to active "
-            "emergencies and natural disasters?",
+            "May CERT use this contact information for anything other than communications directly related " +
+            "to active emergencies and natural disasters?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -477,62 +459,39 @@ class Household:
             "contact": self.contact,
         }
         df = pd.DataFrame([dict])
-        # explicitly select the dataframe's types to allow nulls
-        """df["address"] = df["address"].astype("string")
-        df["adults"] = df["adults"].astype("Int64")
-        df["children"].astype("Int64")
-        df["pets"].astype("boolean")
-        df["dogs"].astype("boolean")
-        df["crit_meds"].astype("boolean")
-        df["ref_meds"].astype("boolean")
-        df["special_needs"].astype("boolean")
-        df["gas_tank"].astype("boolean")
-        df["gas_line"].astype("boolean")
-        df["adrs_number"].astype("string")
-        df["adrs_street"].astype("string")
-        df["adrs_city"].astype("string")
-        df["adrs_state"].astype("string")
-        df["adrs_zip"].astype("string")
-        df["med_training"].astype("boolean")
-        df["email"].astype("string")
-        df["phone"].astype("string")
-        df["know_nbr"].astype("boolean")
-        df["key_nbr"].astype("boolean")
-        df["news_ltr"].astype("boolean")
-        df["contact"].astype("boolean")"""
         return df
 
 
 def main():
     """
-    This function is just used for dev testing
+    This function is just used for dev demoing
     """
 
     print("Running in dev mode")
 
     # test one household
     hh = Household(
-        adults=3,
-        children=3,
-        pets=True,
-        dogs=True,
-        crit_meds=False,
-        ref_meds=False,
-        special_needs=True,
-        gas_tank=True,
-        gas_line=False,
+        adults="3",
+        children="3",
+        pets='t',
+        dogs='t',
+        crit_meds='f',
+        ref_meds='f',
+        special_needs='t',
+        gas_tank='t',
+        gas_line='f',
         adrs_number="742",
         adrs_street="Evergreen Terrace",
         adrs_city="Springfield",
         adrs_state="OR",
         adrs_zip="55555",
-        med_training=False,
+        med_training='f',
         email="el_barto@hotmail.com",
         phone="5035551234",
-        know_nbr=True,
-        key_nbr=False,
-        news_ltr=None,
-        contact=False
+        know_nbr='t',
+        key_nbr='f',
+        news_ltr=NA,
+        contact='f'
     )
     print(f"Is valid? {hh.validate_data()}")
 
@@ -541,103 +500,103 @@ def main():
     # test several households
 
     hh0 = Household(
-        adults=2, children=0, pets=False, dogs=False,
-        crit_meds=False, ref_meds=False, special_needs=False,
-        gas_tank=False, gas_line=False,
+        adults="2", children="0", pets="f", dogs="f",
+        crit_meds="f", ref_meds="f", special_needs="f",
+        gas_tank="f", gas_line="f",
         adrs_number="100", adrs_street="Maple Ave", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=None, email=None, phone=None,
-        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+        med_training=NA, email=NA, phone=NA,
+        know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
     )
 
     hh1 = Household(
-        adults=1, children=2, pets=True, dogs=True,
-        crit_meds=True, ref_meds=True, special_needs=False,
-        gas_tank=True, gas_line=False,
+        adults="1", children="2", pets="t", dogs="t",
+        crit_meds="t", ref_meds="t", special_needs="f",
+        gas_tank="t", gas_line="f",
         adrs_number="101", adrs_street="Oak St", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=True, email="hh1@example.com", phone="5551234567",
-        know_nbr=True, key_nbr=False, news_ltr=True, contact=False
+        med_training="t", email="hh1@example.com", phone="5551234567",
+        know_nbr="t", key_nbr="f", news_ltr="t", contact="f"
     )
 
     hh2 = Household(
-        adults=3, children=1, pets=False, dogs=False,
-        crit_meds=False, ref_meds=False, special_needs=True,
-        gas_tank=False, gas_line=True,
+        adults="3", children="1", pets="f", dogs="f",
+        crit_meds="f", ref_meds="f", special_needs="t",
+        gas_tank="f", gas_line="t",
         adrs_number="102", adrs_street="Pine Rd", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=False, email=None, phone=None,
-        know_nbr=False, key_nbr=True, news_ltr=False, contact=True
+        med_training="f", email=NA, phone=NA,
+        know_nbr="f", key_nbr="t", news_ltr="f", contact="t"
     )
 
     hh3 = Household(
-        adults=2, children=3, pets=True, dogs=False,
-        crit_meds=False, ref_meds=False, special_needs=False,
-        gas_tank=False, gas_line=False,
+        adults="2", children="3", pets="t", dogs="f",
+        crit_meds="f", ref_meds="f", special_needs="f",
+        gas_tank="f", gas_line="f",
         adrs_number="103", adrs_street="Cedar Ln", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=None, email="hh3@example.org", phone="5559876543",
-        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+        med_training=NA, email="hh3@example.org", phone="5559876543",
+        know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
     )
 
     hh4 = Household(
-        adults=1, children=0, pets=False, dogs=False,
-        crit_meds=True, ref_meds=False, special_needs=False,
-        gas_tank=False, gas_line=False,
+        adults="1", children="0", pets="f", dogs="f",
+        crit_meds="t", ref_meds="f", special_needs="f",
+        gas_tank="f", gas_line="f",
         adrs_number="104", adrs_street="Birch Blvd", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=True, email=None, phone=None,
-        know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+        med_training="t", email=NA, phone=NA,
+        know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
     )
 
     hh5 = Household(
-        adults=4, children=2, pets=True, dogs=True,
-        crit_meds=False, ref_meds=False, special_needs=True,
-        gas_tank=True, gas_line=True,
+        adults="4", children="2", pets="t", dogs="t",
+        crit_meds="f", ref_meds="f", special_needs="t",
+        gas_tank="t", gas_line="t",
         adrs_number="105", adrs_street="Elm St", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=False, email="hh5@example.net", phone="5551112222",
-        know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+        med_training="f", email="hh5@example.net", phone="5551112222",
+        know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
     )
 
     hh6 = Household(
-        adults=2, children=1, pets=False, dogs=False,
-        crit_meds=False, ref_meds=False, special_needs=False,
-        gas_tank=False, gas_line=False,
+        adults="2", children="1", pets="f", dogs="f",
+        crit_meds="f", ref_meds="f", special_needs="f",
+        gas_tank="f", gas_line="f",
         adrs_number="106", adrs_street="Willow Way", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=None, email=None, phone=None,
-        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+        med_training=NA, email=NA, phone=NA,
+        know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
     )
 
     hh7 = Household(
-        adults=3, children=0, pets=True, dogs=False,
-        crit_meds=True, ref_meds=True, special_needs=False,
-        gas_tank=False, gas_line=True,
+        adults="3", children="0", pets="t", dogs="f",
+        crit_meds="t", ref_meds="t", special_needs="f",
+        gas_tank="f", gas_line="t",
         adrs_number="107", adrs_street="Poplar Pl", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=True, email="hh7@example.com", phone="5553334444",
-        know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+        med_training="t", email="hh7@example.com", phone="5553334444",
+        know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
     )
 
     hh8 = Household(
-        adults=2, children=2, pets=False, dogs=False,
-        crit_meds=False, ref_meds=False, special_needs=False,
-        gas_tank=False, gas_line=False,
+        adults="2", children="2", pets="f", dogs="f",
+        crit_meds="f", ref_meds="f", special_needs="f",
+        gas_tank="f", gas_line="f",
         adrs_number="108", adrs_street="Ash Ct", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=False, email=None, phone=None,
-        know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+        med_training="f", email=NA, phone=NA,
+        know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
     )
 
     hh9 = Household(
-        adults=1, children=1, pets=True, dogs=True,
-        crit_meds=False, ref_meds=False, special_needs=True,
-        gas_tank=True, gas_line=False,
+        adults="1", children="1", pets="t", dogs="t",
+        crit_meds="f", ref_meds="f", special_needs="t",
+        gas_tank="t", gas_line="f",
         adrs_number="109", adrs_street="Chestnut Dr", adrs_city="Springfield",
         adrs_state="AA", adrs_zip="12345",
-        med_training=True, email="hh9@example.org", phone="5555556666",
-        know_nbr=False, key_nbr=True, news_ltr=False, contact=False
+        med_training="t", email="hh9@example.org", phone="5555556666",
+        know_nbr="f", key_nbr="t", news_ltr="f", contact="f"
     )
 
     dataframes = []
