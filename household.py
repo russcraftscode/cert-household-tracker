@@ -10,40 +10,88 @@ import pandas as pd
 import cli_utils as cli
 import sys
 import numpy as np
+from cli_utils import NA
 
 
-def str_to_bool(boolean_string: str) -> bool:
-    if boolean_string.lower() == "true":
-        return True
-    elif boolean_string.lower() == "false":
-        return False
-    else:
-        return None
+#NA = "n/a"
 
 
-def is_valid_optional_string(x):
-    return pd.isna(x) or isinstance(x, str)
+def is_valid_optional_string(x, length=None):
+    """
+    Checks if valid optional string data
+    :param x: string to check:
+    :param length: optional required length of string
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if length is None or len(x) == length:
+            return True
+    return False
 
 
-def is_valid_optional_int(x):
-    # Accept Python int, NumPy int, or missing.
-    return pd.isna(x) or isinstance(x, (int, np.integer))
+def is_valid_optional_numeric(x, length=None):
+    """
+    Checks if valid optional numeric data. Can be just digits or n/a
+    :param x: string to check
+    :param length: optional required length of string
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if x == NA:
+            return True
+        if x.isdigit() and (length is None or len(x) == length):
+            return True
+    return False
 
 
 def is_valid_optional_bool(x):
-    return pd.isna(x) or isinstance(x, bool)
+    """
+    Checks if valid optional numeric data. Can be t,f, or n/a
+    :param x: string to check
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if x.lower() == 't' or x.lower() == 'f' or x == NA:
+            return True
+    return False
 
 
-def is_valid_string(x):
-    return isinstance(x, str)
+def is_valid_string(x, length=None):
+    """
+    Checks if valid string. cannot be n/a
+    :param x: string to check
+    :param length: optional required length of string
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if x != NA and (length is None or len(x) == length):
+            return True
+    return False
 
 
-def is_valid_int(x):
-    return isinstance(x, (int, np.integer))
+def is_valid_numeric(x, length=None):
+    """
+    Checks if valid optional numeric data. Must be just digits
+    :param x: string to check
+    :param length: optional required length of string
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if x.isdigit() and (length is None or len(x) == length):
+            return True
+    return False
 
 
 def is_valid_bool(x):
-    return isinstance(x, bool)
+    """
+    Checks if valid optional numeric data. Must be t or f
+    :param x: string to check
+    :return: true if valid
+    """
+    if isinstance(x, str):
+        if x.lower() == 't' or x.lower() == 'f':
+            return True
+    return False
 
 
 class Household:
@@ -105,81 +153,69 @@ class Household:
         :return:
         """
         # Required data must be the correct type
-        if not is_valid_int(self.adults):
-            print(f"Validation Error: adults", file=sys.stderr)
+        if not is_valid_numeric(self.adults):
+            print(f"Validation Error: adults {self.adults}", file=sys.stderr)
             return False
-
-        if not is_valid_int(self.children):
-            print(f"Validation Error: children", file=sys.stderr)
+        if not is_valid_numeric(self.children):
+            print(f"Validation Error: children {self.children}", file=sys.stderr)
             return False
         if not is_valid_bool(self.pets):
-            print(f"Validation Error: pets {type(self.pets)}", file=sys.stderr)
+            print(f"Validation Error: pets {self.pets}", file=sys.stderr)
             return False
         if not is_valid_bool(self.dogs):
-            print(f"Validation Error: ", file=sys.stderr)
+            print(f"Validation Error: dogs {self.dogs}", file=sys.stderr)
             return False
         if not is_valid_bool(self.crit_meds):
-            print(f"Validation Error: crit_meds", file=sys.stderr)
+            print(f"Validation Error: crit_meds {self.crit_meds}", file=sys.stderr)
             return False
         if not is_valid_bool(self.ref_meds):
-            print(f"Validation Error: ref_meds", file=sys.stderr)
+            print(f"Validation Error: ref_meds {self.ref_meds}", file=sys.stderr)
             return False
         if not is_valid_bool(self.special_needs):
-            print(f"Validation Error: special_needs", file=sys.stderr)
+            print(f"Validation Error: special_needs {self.special_needs}", file=sys.stderr)
             return False
         if not is_valid_bool(self.gas_tank):
-            print(f"Validation Error: gas_tank", file=sys.stderr)
+            print(f"Validation Error: gas_tank {self.gas_tank}", file=sys.stderr)
             return False
         if not is_valid_bool(self.gas_line):
-            print(f"Validation Error: gas_line", file=sys.stderr)
+            print(f"Validation Error: gas_line {self.gas_line}", file=sys.stderr)
             return False
-
         if not is_valid_string(self.adrs_number):
-            print(f"Validation Error: adrs_number", file=sys.stderr)
+            print(f"Validation Error: adrs_number {self.adrs_number}", file=sys.stderr)
             return False
         if not is_valid_string(self.adrs_street):
-            print(f"Validation Error: adrs_street", file=sys.stderr)
+            print(f"Validation Error: adrs_street {self.adrs_street}", file=sys.stderr)
             return False
         if not is_valid_string(self.adrs_city):
-            print(f"Validation Error: adrs_city", file=sys.stderr)
+            print(f"Validation Error: adrs_city {self.adrs_city}", file=sys.stderr)
             return False
-        if not is_valid_string(self.adrs_state):
-            print(f"Validation Error: adrs_state type", file=sys.stderr)
+        if not is_valid_string(self.adrs_state, length=2):
+            print(f"Validation Error: adrs_state {self.adrs_state} type", file=sys.stderr)
             return False
-        elif not self.adrs_state.isalpha() or len(self.adrs_state) != 2:
-            print(f"Validation Error: adrs_state value", file=sys.stderr)
+        if not is_valid_string(self.adrs_zip, length=5):
+            print(f"Validation Error: adrs_zip {self.adrs_zip} type", file=sys.stderr)
             return False
-        if not is_valid_string(self.adrs_zip):
-            print(f"Validation Error: adrs_zip type", file=sys.stderr)
-            return False
-        elif not self.adrs_zip.isdecimal() or len(self.adrs_zip) != 5:
-            print(f"Validation Error: adrs_zip value", file=sys.stderr)
-            return False
-
+        # optional data can also be NA
         if not is_valid_optional_bool(self.med_training):
-            print(f"Validation Error: med_training", file=sys.stderr)
+            print(f"Validation Error: med_training {self.med_training}", file=sys.stderr)
             return False
         if not is_valid_optional_string(self.email):
-            print(f"Validation Error: email", file=sys.stderr)
+            print(f"Validation Error: email {self.email}", file=sys.stderr)
             return False
-        if not is_valid_optional_string(self.phone):
-            print(f"Validation Error: phone type", file=sys.stderr)
+        if not is_valid_optional_numeric(self.phone, length=10):
+            print(f"Validation Error: phone {self.phone}", file=sys.stderr)
             return False
-        elif self.phone:
-            if not self.phone.isdecimal() or len(self.phone) != 10:
-                print(f"Validation Error: phone length", file=sys.stderr)
-                return False
         if not is_valid_optional_bool(self.know_nbr):
-            print(f"Validation Error: know_nbr", file=sys.stderr)
+            print(f"Validation Error: know_nbr {self.know_nbr}", file=sys.stderr)
             return False
         if not is_valid_optional_bool(self.key_nbr):
-            print(f"Validation Error: key_nbr", file=sys.stderr)
+            print(f"Validation Error: key_nbr {self.key_nbr}", file=sys.stderr)
             return False
         if not is_valid_optional_bool(self.news_ltr):
-            print(f"Validation Error: news_ltr", file=sys.stderr)
+            print(f"Validation Error: news_ltr {self.news_ltr}", file=sys.stderr)
             return False
         if not is_valid_optional_bool(self.contact):
-            print(f"Validation Error: contact", file=sys.stderr)
+            print(f"Validation Error: contact {self.contact}", file=sys.stderr)
             return False
 
         # If all checks pass update the address string and return true
@@ -442,7 +478,7 @@ class Household:
         }
         df = pd.DataFrame([dict])
         # explicitly select the dataframe's types to allow nulls
-        df["address"] = df["address"].astype("string")
+        """df["address"] = df["address"].astype("string")
         df["adults"] = df["adults"].astype("Int64")
         df["children"].astype("Int64")
         df["pets"].astype("boolean")
@@ -463,7 +499,7 @@ class Household:
         df["know_nbr"].astype("boolean")
         df["key_nbr"].astype("boolean")
         df["news_ltr"].astype("boolean")
-        df["contact"].astype("boolean")
+        df["contact"].astype("boolean")"""
         return df
 
 

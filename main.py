@@ -9,6 +9,7 @@ import pprint as pp
 
 import pandas as pd
 import cli_utils as cli
+from cli_utils import NA
 import household as hh
 from household import Household
 import sys
@@ -94,108 +95,109 @@ def remove_household_from_df(address: str, df: pd.DataFrame) -> bool:
 
 
 hh0 = Household(
-    adults=2, children=0, pets=False, dogs=False,
-    crit_meds=False, ref_meds=False, special_needs=False,
-    gas_tank=False, gas_line=False,
+    adults="2", children="0", pets="f", dogs="f",
+    crit_meds="f", ref_meds="f", special_needs="f",
+    gas_tank="f", gas_line="f",
     adrs_number="100", adrs_street="Maple Ave", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=None, email=None, phone=None,
-    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    med_training=NA, email=NA, phone=NA,
+    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
 )
 
 hh1 = Household(
-    adults=1, children=2, pets=True, dogs=True,
-    crit_meds=True, ref_meds=True, special_needs=False,
-    gas_tank=True, gas_line=False,
+    adults="1", children="2", pets="t", dogs="t",
+    crit_meds="t", ref_meds="t", special_needs="f",
+    gas_tank="t", gas_line="f",
     adrs_number="101", adrs_street="Oak St", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=True, email="hh1@example.com", phone="5551234567",
-    know_nbr=True, key_nbr=False, news_ltr=True, contact=False
+    med_training="t", email="hh1@example.com", phone="5551234567",
+    know_nbr="t", key_nbr="f", news_ltr="t", contact="f"
 )
 
 hh2 = hh.Household(
-    adults=3, children=1, pets=False, dogs=False,
-    crit_meds=False, ref_meds=False, special_needs=True,
-    gas_tank=False, gas_line=True,
+    adults="3", children="1", pets="f", dogs="f",
+    crit_meds="f", ref_meds="f", special_needs="t",
+    gas_tank="f", gas_line="t",
     adrs_number="102", adrs_street="Pine Rd", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=False, email=None, phone=None,
-    know_nbr=False, key_nbr=True, news_ltr=False, contact=True
+    med_training="f", email=NA, phone=NA,
+    know_nbr="f", key_nbr="t", news_ltr="f", contact="t"
 )
 
 hh3 = hh.Household(
-    adults=2, children=3, pets=True, dogs=False,
-    crit_meds=False, ref_meds=False, special_needs=False,
-    gas_tank=False, gas_line=False,
+    adults="2", children="3", pets="t", dogs="f",
+    crit_meds="f", ref_meds="f", special_needs="f",
+    gas_tank="f", gas_line="f",
     adrs_number="103", adrs_street="Cedar Ln", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=None, email="hh3@example.org", phone="5559876543",
-    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    med_training=NA, email="hh3@example.org", phone="5559876543",
+    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
 )
 
 hh4 = Household(
-    adults=1, children=0, pets=False, dogs=False,
-    crit_meds=True, ref_meds=False, special_needs=False,
-    gas_tank=False, gas_line=False,
+    adults="1", children="0", pets="f", dogs="f",
+    crit_meds="t", ref_meds="f", special_needs="f",
+    gas_tank="f", gas_line="f",
     adrs_number="104", adrs_street="Birch Blvd", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=True, email=None, phone=None,
-    know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+    med_training="t", email=NA, phone=NA,
+    know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
 )
 
 hh5 = Household(
-    adults=4, children=2, pets=True, dogs=True,
-    crit_meds=False, ref_meds=False, special_needs=True,
-    gas_tank=True, gas_line=True,
+    adults="4", children="2", pets="t", dogs="t",
+    crit_meds="f", ref_meds="f", special_needs="t",
+    gas_tank="t", gas_line="t",
     adrs_number="105", adrs_street="Elm St", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=False, email="hh5@example.net", phone="5551112222",
-    know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+    med_training="f", email="hh5@example.net", phone="5551112222",
+    know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
 )
 
 hh6 = Household(
-    adults=2, children=1, pets=False, dogs=False,
-    crit_meds=False, ref_meds=False, special_needs=False,
-    gas_tank=False, gas_line=False,
+    adults="2", children="1", pets="f", dogs="f",
+    crit_meds="f", ref_meds="f", special_needs="f",
+    gas_tank="f", gas_line="f",
     adrs_number="106", adrs_street="Willow Way", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=None, email=None, phone=None,
-    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    med_training=NA, email=NA, phone=NA,
+    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
 )
 
 hh7 = Household(
-    adults=3, children=0, pets=True, dogs=False,
-    crit_meds=True, ref_meds=True, special_needs=False,
-    gas_tank=False, gas_line=True,
+    adults="3", children="0", pets="t", dogs="f",
+    crit_meds="t", ref_meds="t", special_needs="f",
+    gas_tank="f", gas_line="t",
     adrs_number="107", adrs_street="Poplar Pl", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=True, email="hh7@example.com", phone="5553334444",
-    know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+    med_training="t", email="hh7@example.com", phone="5553334444",
+    know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
 )
 
 hh8 = Household(
-    adults=2, children=2, pets=False, dogs=False,
-    crit_meds=False, ref_meds=False, special_needs=False,
-    gas_tank=False, gas_line=False,
+    adults="2", children="2", pets="f", dogs="f",
+    crit_meds="f", ref_meds="f", special_needs="f",
+    gas_tank="f", gas_line="f",
     adrs_number="108", adrs_street="Ash Ct", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=False, email=None, phone=None,
-    know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+    med_training="f", email=NA, phone=NA,
+    know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
 )
 
 hh9 = Household(
-    adults=1, children=1, pets=True, dogs=True,
-    crit_meds=False, ref_meds=False, special_needs=True,
-    gas_tank=True, gas_line=False,
+    adults="1", children="1", pets="t", dogs="t",
+    crit_meds="f", ref_meds="f", special_needs="t",
+    gas_tank="t", gas_line="f",
     adrs_number="109", adrs_street="Chestnut Dr", adrs_city="Springfield",
     adrs_state="AA", adrs_zip="12345",
-    med_training=True, email="hh9@example.org", phone="5555556666",
-    know_nbr=False, key_nbr=True, news_ltr=False, contact=False
+    med_training="t", email="hh9@example.org", phone="5555556666",
+    know_nbr="f", key_nbr="t", news_ltr="f", contact="f"
 )
+
 
 test = hh0.to_dataframe()
 
-#print(test.to_string())
+print(test.to_string())
 
 test = add_household_to_df(hh1, test)
 test = add_household_to_df(hh2, test)

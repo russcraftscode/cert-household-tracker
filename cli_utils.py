@@ -6,6 +6,7 @@ This library handles prompting the user for responses and ensuring those respons
 """
 import os
 
+NA = "n/a"
 
 def clear_screen():
     """Clears the console output. Should work on win and mac/unix/linx"""
@@ -184,7 +185,7 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
         user_response = input().strip()
         # Non-required questions may be blank
         if not required and user_response == "":
-            return None
+            return NA
         # required questions cannot be blank
         if user_response == "":
             clear_screen()
@@ -198,7 +199,7 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
         if input_format == "int":
             if user_response.isdigit():
                 # Return the properly formatted response as an int value
-                return int(user_response)
+                return user_response
             else:
                 clear_screen()
                 print("Please respond with digits only. No letters, commas, or other symbols.")
@@ -216,9 +217,9 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
         if input_format == "y/n":
             if len(user_response) > 0:  # check to make sure the user input at least one character
                 if user_response[0].lower() == 'y':
-                    return True
+                    return 't'
                 elif user_response[0].lower() == 'n':
-                    return False
+                    return 'f'
                 else:
                     clear_screen()
                     print("Please respond with \"yes\" or \"no\" only. No other letters")
