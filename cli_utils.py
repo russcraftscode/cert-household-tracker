@@ -153,23 +153,22 @@ def display_yes_no(query, row_max, header=None):
     print("Make selection: <yes/no>")
 
 
-def prompt_user(query, user_options=None, input_format=None, row_limit=60, header=None, required=True, table=None):
+def prompt_user(query, user_options=None, input_format=None, input_length=None, row_limit=60, header=None, required=True, table=None):
     """
     Prompts the user for input. Chooses the appropriate display type for the question
     :param query:  to ask the user
     :param user_options: list of options that the user may pick from (optional)
-    :param input_format: optional constraint on user response ["y/n", "numeric"]
+    :param input_format: optional constraint on user response ["y/n", "numeric", "int"]
+    :param input_length: optional constraint requiring user to respond with that many characters
     :param row_limit: row length of the display. Defaults to 60 chars
     :param header: optional line to display above the question
     :param required: is the user required to give an answer. Defaults to true
     :return: the response of the user. Type will be determined by 'format' parameter. Defaults to string
     """
-    # TODO: add format checkers for email, phone, and address
+    # TODO: add format checkers for email, phone
     clear_screen()
-    # Determine appropriate display type
-    display_type = "open-ended"
-    if input_format == "numeric":
-        pass
+    if table:
+        display_table(table)
     # Repeat question loop until user responds appropriately
     while True:
         # Prompt the user with the correct display type
@@ -181,8 +180,8 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
             else:  # asking a free-form question
                 display_text_input(query, row_max=row_limit, header=header)
 
-        # Check response acceptability
-        user_response = input()
+        # Check response acceptability & strip out any lead/trailing whitespace
+        user_response = input().strip()
         # Non-required questions may be blank
         if not required and user_response == "":
             return None
@@ -191,14 +190,27 @@ def prompt_user(query, user_options=None, input_format=None, row_limit=60, heade
             clear_screen()
             print("This is a required question.")
             continue
-        # Numeric format questions must be answered with just the digits 0-9
-        if input_format == "numeric":
+        # if response is not the proper length
+        if len(user_response) != input_length and input_length:
+            print(f"Response must be {input_length} characters long.")
+            continue
+        # int format questions must be answered with a integer with no symbols
+        if input_format == "int":
             if user_response.isdigit():
                 # Return the properly formatted response as an int value
                 return int(user_response)
             else:
                 clear_screen()
                 print("Please respond with digits only. No letters, commas, or other symbols.")
+                continue
+        # int format questions must be answered with just numbers
+        if input_format == "numeric":
+            if user_response.isdigit():
+                # Return the properly formatted response as an int value
+                return user_response
+            else:
+                clear_screen()
+                print("Please respond with digits only. No dashes, commas, or other symbols.")
                 continue
         # Yes/No questions must have a response that either starts with a 'y' or a 'n'. Case does not matter
         if input_format == "y/n":

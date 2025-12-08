@@ -7,7 +7,44 @@ This class maintains all the data of a single household
 """
 
 import pandas as pd
-import cli_gui
+import cli_utils as cli
+import sys
+import numpy as np
+
+
+def str_to_bool(boolean_string: str) -> bool:
+    if boolean_string.lower() == "true":
+        return True
+    elif boolean_string.lower() == "false":
+        return False
+    else:
+        return None
+
+
+def is_valid_optional_string(x):
+    return pd.isna(x) or isinstance(x, str)
+
+
+def is_valid_optional_int(x):
+    # Accept Python int, NumPy int, or missing.
+    return pd.isna(x) or isinstance(x, (int, np.integer))
+
+
+def is_valid_optional_bool(x):
+    return pd.isna(x) or isinstance(x, bool)
+
+
+def is_valid_string(x):
+    return isinstance(x, str)
+
+
+def is_valid_int(x):
+    return isinstance(x, (int, np.integer))
+
+
+def is_valid_bool(x):
+    return isinstance(x, bool)
+
 
 class Household:
     def __init__(
@@ -21,8 +58,11 @@ class Household:
             special_needs=None,
             gas_tank=None,
             gas_line=None,
-            ad_first=None,
-            ad_second=None,
+            adrs_number=None,
+            adrs_street=None,
+            adrs_city=None,
+            adrs_state=None,
+            adrs_zip=None,
             med_training=None,
             email=None,
             phone=None,
@@ -44,9 +84,11 @@ class Household:
         self.special_needs = special_needs
         self.gas_tank = gas_tank
         self.gas_line = gas_line
-
-        self.ad_first = ad_first
-        self.ad_second = ad_second
+        self.adrs_number = adrs_number
+        self.adrs_street = adrs_street
+        self.adrs_city = adrs_city
+        self.adrs_state = adrs_state
+        self.adrs_zip = adrs_zip
         self.med_training = med_training
         self.email = email
         self.phone = phone
@@ -55,6 +97,7 @@ class Household:
         self.news_ltr = news_ltr
         self.contact = contact
         self.validated = False
+        self.adrs = None
 
     def validate_data(self) -> bool:
         """
@@ -62,8 +105,102 @@ class Household:
         :return:
         """
         # Required data must be the correct type
-        if not isinstance(self.adults, int): return False
-        if not isinstance(self.children, int): return False
+        if not is_valid_int(self.adults):
+            print(f"Validation Error: adults", file=sys.stderr)
+            return False
+
+        if not is_valid_int(self.children):
+            print(f"Validation Error: children", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.pets):
+            print(f"Validation Error: pets {type(self.pets)}", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.dogs):
+            print(f"Validation Error: ", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.crit_meds):
+            print(f"Validation Error: crit_meds", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.ref_meds):
+            print(f"Validation Error: ref_meds", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.special_needs):
+            print(f"Validation Error: special_needs", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.gas_tank):
+            print(f"Validation Error: gas_tank", file=sys.stderr)
+            return False
+        if not is_valid_bool(self.gas_line):
+            print(f"Validation Error: gas_line", file=sys.stderr)
+            return False
+
+        if not is_valid_string(self.adrs_number):
+            print(f"Validation Error: adrs_number", file=sys.stderr)
+            return False
+        if not is_valid_string(self.adrs_street):
+            print(f"Validation Error: adrs_street", file=sys.stderr)
+            return False
+        if not is_valid_string(self.adrs_city):
+            print(f"Validation Error: adrs_city", file=sys.stderr)
+            return False
+        if not is_valid_string(self.adrs_state):
+            print(f"Validation Error: adrs_state type", file=sys.stderr)
+            return False
+        elif not self.adrs_state.isalpha() or len(self.adrs_state) != 2:
+            print(f"Validation Error: adrs_state value", file=sys.stderr)
+            return False
+        if not is_valid_string(self.adrs_zip):
+            print(f"Validation Error: adrs_zip type", file=sys.stderr)
+            return False
+        elif not self.adrs_zip.isdecimal() or len(self.adrs_zip) != 5:
+            print(f"Validation Error: adrs_zip value", file=sys.stderr)
+            return False
+
+        if not is_valid_optional_bool(self.med_training):
+            print(f"Validation Error: med_training", file=sys.stderr)
+            return False
+        if not is_valid_optional_string(self.email):
+            print(f"Validation Error: email", file=sys.stderr)
+            return False
+        if not is_valid_optional_string(self.phone):
+            print(f"Validation Error: phone type", file=sys.stderr)
+            return False
+        elif self.phone:
+            if not self.phone.isdecimal() or len(self.phone) != 10:
+                print(f"Validation Error: phone length", file=sys.stderr)
+                return False
+        if not is_valid_optional_bool(self.know_nbr):
+            print(f"Validation Error: know_nbr", file=sys.stderr)
+            return False
+        if not is_valid_optional_bool(self.key_nbr):
+            print(f"Validation Error: key_nbr", file=sys.stderr)
+            return False
+        if not is_valid_optional_bool(self.news_ltr):
+            print(f"Validation Error: news_ltr", file=sys.stderr)
+            return False
+        if not is_valid_optional_bool(self.contact):
+            print(f"Validation Error: contact", file=sys.stderr)
+            return False
+
+        # If all checks pass update the address string and return true
+        self.adrs = f"{self.adrs_number} {self.adrs_street}/{self.adrs_city},{self.adrs_state} {self.adrs_zip}"
+        self.validated = True
+        return True
+
+    def validate_data_old(self) -> bool:
+        """
+        Checks the types of all data to make sure required data is input and optional data is no wrong type
+        :return:
+        """
+        # Required data must be the correct type
+        if not isinstance(self.adults, int):
+            print(type(self.adults))
+            print(f"Validation Error: adults not int", file=sys.stderr)
+            return False
+        if not isinstance(self.children, int):
+            print(type(self.children))
+            print(f"Validation Error: children not int", file=sys.stderr)
+            return False
         if not isinstance(self.pets, bool): return False
         if not isinstance(self.dogs, bool): return False
         if not isinstance(self.crit_meds, bool): return False
@@ -71,8 +208,26 @@ class Household:
         if not isinstance(self.special_needs, bool): return False
         if not isinstance(self.gas_tank, bool): return False
         if not isinstance(self.gas_line, bool): return False
-        if not isinstance(self.ad_first, str): return False
-        if not isinstance(self.ad_second, str): return False
+        if not isinstance(self.adrs_number, str):
+            return False
+        elif not self.adrs_number.isnumeric():
+            return False
+        if not isinstance(self.adrs_street, str): return False
+        if not isinstance(self.adrs_city, str): return False
+        if not self.adrs_state:
+            return False
+        else:
+            if (not isinstance(self.adrs_state, str) and
+                    len(self.adrs_state) == 2 and
+                    self.adrs_state.isalpha()):
+                return False
+        if not self.adrs_zip:
+            return False
+        else:
+            if (not isinstance(self.adrs_zip, str) and
+                    len(self.adrs_zip) == 5 and
+                    self.adrs_zip.isnumeric()):
+                return False
         # Optional data can be either null or the correct type
         if not (isinstance(self.phone, str) or not self.phone): return False
         if not (isinstance(self.email, str) or not self.email): return False
@@ -81,118 +236,235 @@ class Household:
         if not (isinstance(self.key_nbr, bool) or not self.key_nbr): return False
         if not (isinstance(self.news_ltr, bool) or not self.news_ltr): return False
         if not (isinstance(self.contact, bool) or not self.contact): return False
-        # If all checks pass
+        # If all checks pass update the address string and return true
+        self.adrs = f"{self.adrs_number} {self.adrs_street}/{self.adrs_city},{self.adrs_state} {self.adrs_zip}"
+        self.validated = True
         return True
 
-    def ask_questions(self, scr_w):
+    #def load_dataframe(self, df: pd.DataFrame) -> bool:
+    def load_data(self, series: pd.Series) -> bool:
+        """
+        Populates data from a single row from a dataframe. Returns false if data is invalid or multi-line
+        :param series: series of data from a pandas dataframe
+        :return: true if valid, false if invalid
+        """
+
+        # Check if all required columns exist in the series
+        required_columns = [
+            'adults', 'children', 'pets', 'dogs', 'crit_meds', 'ref_meds', 'special_needs',
+            'gas_tank', 'gas_line', 'adrs_number', 'adrs_street', 'adrs_city', 'adrs_state',
+            'adrs_zip', 'med_training', 'email', 'phone', 'know_nbr', 'key_nbr', 'news_ltr', 'contact'
+        ]
+        if not all(col in series.index for col in required_columns):
+            print("Error: load_data given series without all required data", file=sys.stderr)
+            return False
+
+        # load the data
+        # self.adults = int(series['adults'])
+        # self.children = int(series['children'])
+        # self.pets = str_to_bool(series['pets'])
+        # self.dogs = str_to_bool(series['dogs'])
+        # self.crit_meds = str_to_bool(series['crit_meds'])
+        # self.ref_meds = str_to_bool(series['ref_meds'])
+        # self.special_needs = str_to_bool(series['special_needs'])
+        # self.gas_tank = str_to_bool(series['gas_tank'])
+        # self.gas_line = str_to_bool(series['gas_line'])
+        # self.adrs_number = series['adrs_number']
+        # self.adrs_street = series['adrs_street']
+        # self.adrs_city = series['adrs_city']
+        # self.adrs_state = series['adrs_state']
+        # self.adrs_zip = series['adrs_zip']
+        # self.med_training = str_to_bool(series['med_training'])
+        # self.email = series['email']
+        # self.phone = series['phone']
+        # self.know_nbr = str_to_bool(series['know_nbr'])
+        # self.key_nbr = str_to_bool(series['key_nbr'])
+        # self.news_ltr = str_to_bool(series['news_ltr'])
+        # self.contact = str_to_bool(series['contact'])
+        self.adults = series['adults']
+        self.children = series['children']
+        self.pets = series['pets']
+        self.dogs = series['dogs']
+        self.crit_meds = series['crit_meds']
+        self.ref_meds = series['ref_meds']
+        self.special_needs = series['special_needs']
+        self.gas_tank = series['gas_tank']
+        self.gas_line = series['gas_line']
+        self.adrs_number = series['adrs_number']
+        self.adrs_street = series['adrs_street']
+        self.adrs_city = series['adrs_city']
+        self.adrs_state = series['adrs_state']
+        self.adrs_zip = series['adrs_zip']
+        self.med_training = series['med_training']
+        self.email = series['email']
+        self.phone = series['phone']
+        self.know_nbr = series['know_nbr']
+        self.key_nbr = series['key_nbr']
+        self.news_ltr = series['news_ltr']
+        self.contact = series['contact']
+        # check to make sure the data is valid
+        if self.validate_data():
+            return True
+        else:
+            print("Error: load_dataframe given invalid data", file=sys.stderr)
+            return False
+
+    def get_adrs_str(self):
+        """
+        Compiles all address data into a single-line string with a / between the street name and city info
+        :return: compiled address string, none if address is invalid
+        """
+        if not self.validate_data(): return None
+        return self.adrs
+
+    def ask_questions(self, scr_w) -> None:
         """
         Asks the user the battery of questions to generate a new household object
         :param scr_w: the max width of the display
         :return: none
         """
-        req = "Required Questions"
+        self.validated = False  # flag the data as unvalidated because it is changing
+        req = "Add New Household: Required Questions"
         # Ask the required questions
-        self.adults = cli_gui.prompt_user(
+        self.adults = cli.prompt_user(
             "How many adults live in your household?",
-            header=req, input_format="numeric", row_limit=scr_w)
-        self.children = cli_gui.prompt_user(
+            header=req, input_format="int", row_limit=scr_w)
+        self.children = cli.prompt_user(
             "How many children live in your household?",
-            header=req, input_format="numeric", row_limit=scr_w)
-        self.pets = cli_gui.prompt_user(
+            header=req, input_format="int", row_limit=scr_w)
+        self.pets = cli.prompt_user(
             "Do you have pets?",
             header=req, input_format="y/n", row_limit=scr_w)
         if self.pets:
-            self.dogs = cli_gui.prompt_user(
+            self.dogs = cli.prompt_user(
                 "Do you have any dogs?",
                 header=req, input_format="y/n", row_limit=scr_w)
-        else:# Cannot have dogs if there are no pets
+        else:  # Cannot have dogs if there are no pets
             self.dogs = False
-        self.crit_meds = cli_gui.prompt_user(
+        self.crit_meds = cli.prompt_user(
             "Does anyone in the household have critical medications?",
             header=req, input_format="y/n", row_limit=scr_w)
         if self.crit_meds:
-            self.ref_meds = cli_gui.prompt_user(
+            self.ref_meds = cli.prompt_user(
                 "Do any of these medications need to be refrigerated?",
                 header=req, input_format="y/n", row_limit=scr_w)
-        else: # Cannot have temp sensitive critical meds if there are no critical meds
+        else:  # Cannot have temp sensitive critical meds if there are no critical meds
             self.ref_meds = False
-        self.special_needs = cli_gui.prompt_user(
+        self.special_needs = cli.prompt_user(
             "Does anyone in this household have special needs that would require extra assistance in an evacuation?",
             header=req, input_format="y/n", row_limit=scr_w)
-        self.gas_tank = cli_gui.prompt_user(
+        self.gas_tank = cli.prompt_user(
             "Does the house have a large propane tank? Anything larger than the standard size used in a gas grill?",
             header=req, input_format="y/n", row_limit=scr_w)
-        self.gas_line = cli_gui.prompt_user(
-            "Does the house have gas hookup for cooking or gas heat?",
+        self.gas_line = cli.prompt_user(
+            "Does the house have gas line hookup, such as a gas stove, gas fireplace, or gas heat?",
             header=req, input_format="y/n", row_limit=scr_w)
-        self.ad_first = cli_gui.prompt_user(
-            "What is the 1st line of the mailing address? Enter it as you would on an envelope,"+
-            " street number and then street name",
-            header=req, required=False, row_limit=scr_w)
-        self.ad_second = cli_gui.prompt_user(
-            "What is the 2nd line of the mailing address? Enter it as you would on an envelope,"+
-            " town name, then a comma, then state and zip code",
-            header=req, required=False, row_limit=scr_w)
+        self.adrs_number = cli.prompt_user(
+            "What is the number of the street address?" +
+            " For example, if you lived on 123 Main Street, you would enter '123'",
+            header=req, input_format="numeric", row_limit=scr_w)
+        self.adrs_street = cli.prompt_user(
+            "What is the name of the street your house is on?" +
+            " For example, if you lived on 123 Main Street, you would enter 'Main Street'",
+            header=req, row_limit=scr_w)
+        self.adrs_city = cli.prompt_user(
+            "What is the town/city/community name on your mailing address?" +
+            " For example, if your address was was '123 Main Street Phoenix, AZ 12345' you would enter 'Phoenix'",
+            header=req, row_limit=scr_w)
+        self.adrs_state = cli.prompt_user(
+            "What is 2 letter state abbreviation for your mailing address?" +
+            " For example, if you live in Arizona you would enter 'AZ'",
+            header=req, input_length=2, row_limit=scr_w)
+        self.adrs_zip = cli.prompt_user(
+            "What is 5 digit zip code on your mailing address?" +
+            " For example, if your address was was '123 Main Street Phoenix, AZ 12345' you would enter '12345'",
+            header=req, input_format="numeric", input_length=5, row_limit=scr_w)
 
         # optional questions
-        opt = "Optional Question ( Enter nothing to skip )"  # header for the optional questions
-        self.med_training = cli_gui.prompt_user(
+        opt = "Add New Household: Optional Question ( Enter nothing to skip )"  # header for the optional questions
+        self.med_training = cli.prompt_user(
             "Does anyone in this household have medical training and would be able to render assistance in an "
             "emergency?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        self.email = cli_gui.prompt_user(
+        self.email = cli.prompt_user(
             "What is the best email address to update this household about active emergencies and natural disasters?",
             header=opt, row_limit=scr_w, required=False)
-        self.phone = cli_gui.prompt_user(
+        self.phone = cli.prompt_user(
             "What is the best phone number to contact this household in the event of an active emergency and natural "
-            "disaster?",
-            header=opt, row_limit=scr_w, required=False)
-        self.know_nbr = cli_gui.prompt_user(
+            "disaster? Enter just the digits of a 10 digit phone number, including area code. No symbols",
+            header=opt, input_format="numeric", input_length=10, row_limit=scr_w, required=False)
+        self.know_nbr = cli.prompt_user(
             "Do the members of this household know their neighbors?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        self.key_nbr = cli_gui.prompt_user(
+        self.key_nbr = cli.prompt_user(
             "Does this household have a key to their neighbor's house?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        self.news_ltr = cli_gui.prompt_user(
+        self.news_ltr = cli.prompt_user(
             "Would you like to receive the CERT newsletter to stay updated with information beyond currenlty active "
             "emergencies and natural disasters?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
-        self.contact = cli_gui.prompt_user(
+        self.contact = cli.prompt_user(
             "May CERT use this contact information for anything other than communications directly related to active "
             "emergencies and natural disasters?",
             header=opt, input_format="y/n", row_limit=scr_w, required=False)
 
     def to_dataframe(self) -> pd.DataFrame:
         """
-        Creates a panda's dataframe row of this object
+        Creates a panda's dataframe row of this object if it is valid. Otherwise, it returns none.
         :return: dataframe row
         """
         if not self.validate_data():
             print("Error: Household object not valid")
             return None
         dict = {
-            "adults":        self.adults,
-            "children":      self.children,
-            "pets":          self.pets,
-            "dogs":          self.dogs,
-            "crit_meds":     self.crit_meds,
-            "ref_meds":      self.ref_meds,
+            "address": self.adrs,
+            "adults": self.adults,
+            "children": self.children,
+            "pets": self.pets,
+            "dogs": self.dogs,
+            "crit_meds": self.crit_meds,
+            "ref_meds": self.ref_meds,
             "special_needs": self.special_needs,
-            "gas_tank":      self.gas_tank,
-            "gas_line":      self.gas_line,
-            "ad_first":      self.ad_first,
-            "ad_second":     self.ad_second,
-            "med_training":  self.med_training,
-            "email":         self.email,
-            "phone":         self.phone,
-            "know_nbr":      self.know_nbr,
-            "key_nbr":       self.key_nbr,
-            "news_ltr":      self.news_ltr,
-            "contact":       self.contact,
+            "gas_tank": self.gas_tank,
+            "gas_line": self.gas_line,
+            "adrs_number": self.adrs_number,
+            "adrs_street": self.adrs_street,
+            "adrs_city": self.adrs_city,
+            "adrs_state": self.adrs_state,
+            "adrs_zip": self.adrs_zip,
+            "med_training": self.med_training,
+            "email": self.email,
+            "phone": self.phone,
+            "know_nbr": self.know_nbr,
+            "key_nbr": self.key_nbr,
+            "news_ltr": self.news_ltr,
+            "contact": self.contact,
         }
         df = pd.DataFrame([dict])
+        # explicitly select the dataframe's types to allow nulls
+        df["address"] = df["address"].astype("string")
+        df["adults"] = df["adults"].astype("Int64")
+        df["children"].astype("Int64")
+        df["pets"].astype("boolean")
+        df["dogs"].astype("boolean")
+        df["crit_meds"].astype("boolean")
+        df["ref_meds"].astype("boolean")
+        df["special_needs"].astype("boolean")
+        df["gas_tank"].astype("boolean")
+        df["gas_line"].astype("boolean")
+        df["adrs_number"].astype("string")
+        df["adrs_street"].astype("string")
+        df["adrs_city"].astype("string")
+        df["adrs_state"].astype("string")
+        df["adrs_zip"].astype("string")
+        df["med_training"].astype("boolean")
+        df["email"].astype("string")
+        df["phone"].astype("string")
+        df["know_nbr"].astype("boolean")
+        df["key_nbr"].astype("boolean")
+        df["news_ltr"].astype("boolean")
+        df["contact"].astype("boolean")
         return df
-
 
 
 def main():
@@ -213,8 +485,11 @@ def main():
         special_needs=True,
         gas_tank=True,
         gas_line=False,
-        ad_first="742 Evergreen Terrace",
-        ad_second="Springfield, OR 55555",
+        adrs_number="742",
+        adrs_street="Evergreen Terrace",
+        adrs_city="Springfield",
+        adrs_state="OR",
+        adrs_zip="55555",
         med_training=False,
         email="el_barto@hotmail.com",
         phone="5035551234",
@@ -229,67 +504,108 @@ def main():
 
     # test several households
 
-    hh1 = Household(adults=2, children=0, pets=False, dogs=False, crit_meds=True,
-                    ref_meds=False, special_needs=False, gas_tank=False, gas_line=True,
-                    ad_first="123 Maple St", ad_second="Portland, OR 97201",
-                    med_training=True, email="alice@example.com", phone="5031112222",
-                    know_nbr=False, key_nbr=True, news_ltr=True, contact=False)
+    hh0 = Household(
+        adults=2, children=0, pets=False, dogs=False,
+        crit_meds=False, ref_meds=False, special_needs=False,
+        gas_tank=False, gas_line=False,
+        adrs_number="100", adrs_street="Maple Ave", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=None, email=None, phone=None,
+        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    )
 
-    hh2 = Household(adults=4, children=2, pets=True, dogs=False, crit_meds=False,
-                    ref_meds=True, special_needs=True, gas_tank=True, gas_line=False,
-                    ad_first="456 Oak Ave", ad_second="Eugene, OR 97401",
-                    med_training=False, email="bob@example.org", phone="5033334444",
-                    know_nbr=True, key_nbr=False, news_ltr=False, contact=False)
+    hh1 = Household(
+        adults=1, children=2, pets=True, dogs=True,
+        crit_meds=True, ref_meds=True, special_needs=False,
+        gas_tank=True, gas_line=False,
+        adrs_number="101", adrs_street="Oak St", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=True, email="hh1@example.com", phone="5551234567",
+        know_nbr=True, key_nbr=False, news_ltr=True, contact=False
+    )
 
-    hh3 = Household(adults=1, children=3, pets=True, dogs=True, crit_meds=False,
-                    ref_meds=False, special_needs=False, gas_tank=False, gas_line=False,
-                    ad_first="789 Pine Rd", ad_second="Salem, OR 97301",
-                    med_training=False, email="carol@example.net", phone="5035556666",
-                    know_nbr=False, key_nbr=False, news_ltr=True, contact=False)
+    hh2 = Household(
+        adults=3, children=1, pets=False, dogs=False,
+        crit_meds=False, ref_meds=False, special_needs=True,
+        gas_tank=False, gas_line=True,
+        adrs_number="102", adrs_street="Pine Rd", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=False, email=None, phone=None,
+        know_nbr=False, key_nbr=True, news_ltr=False, contact=True
+    )
 
-    hh4 = Household(adults=3, children=1, pets=False, dogs=False, crit_meds=True,
-                    ref_meds=True, special_needs=False, gas_tank=True, gas_line=True,
-                    ad_first="321 Birch Blvd", ad_second="Bend, OR 97701",
-                    med_training=True, email="dave@example.com", phone="5037778888",
-                    know_nbr=True, key_nbr=True, news_ltr=None, contact=False)
+    hh3 = Household(
+        adults=2, children=3, pets=True, dogs=False,
+        crit_meds=False, ref_meds=False, special_needs=False,
+        gas_tank=False, gas_line=False,
+        adrs_number="103", adrs_street="Cedar Ln", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=None, email="hh3@example.org", phone="5559876543",
+        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    )
 
-    hh5 = Household(adults=5, children=0, pets=True, dogs=True, crit_meds=False,
-                    ref_meds=False, special_needs=True, gas_tank=False, gas_line=False,
-                    ad_first="654 Cedar Ln", ad_second="Gresham, OR 97030",
-                    med_training=False, email="eve@example.org", phone="5039990000",
-                    know_nbr=False, key_nbr=True, news_ltr=False, contact=False)
+    hh4 = Household(
+        adults=1, children=0, pets=False, dogs=False,
+        crit_meds=True, ref_meds=False, special_needs=False,
+        gas_tank=False, gas_line=False,
+        adrs_number="104", adrs_street="Birch Blvd", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=True, email=None, phone=None,
+        know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+    )
 
-    hh6 = Household(adults=2, children=2, pets=False, dogs=False, crit_meds=False,
-                    ref_meds=False, special_needs=False, gas_tank=False, gas_line=False,
-                    ad_first="987 Spruce St", ad_second="Hillsboro, OR 97123",
-                    med_training=False, email="frank@example.net", phone="5031113333",
-                    know_nbr=True, key_nbr=False, news_ltr=True, contact=True)
+    hh5 = Household(
+        adults=4, children=2, pets=True, dogs=True,
+        crit_meds=False, ref_meds=False, special_needs=True,
+        gas_tank=True, gas_line=True,
+        adrs_number="105", adrs_street="Elm St", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=False, email="hh5@example.net", phone="5551112222",
+        know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+    )
 
-    hh7 = Household(adults=3, children=4, pets=True, dogs=False, crit_meds=True,
-                    ref_meds=False, special_needs=False, gas_tank=True, gas_line=False,
-                    ad_first="147 Willow Way", ad_second="Medford, OR 97501",
-                    med_training=True, email="grace@example.com", phone="5032224444",
-                    know_nbr=False, key_nbr=False, news_ltr=None, contact=False)
+    hh6 = Household(
+        adults=2, children=1, pets=False, dogs=False,
+        crit_meds=False, ref_meds=False, special_needs=False,
+        gas_tank=False, gas_line=False,
+        adrs_number="106", adrs_street="Willow Way", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=None, email=None, phone=None,
+        know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+    )
 
-    hh8 = Household(adults=1, children=0, pets=False, dogs=False, crit_meds=False,
-                    ref_meds=False, special_needs=False, gas_tank=False, gas_line=False,
-                    ad_first="258 Aspen Ct", ad_second="Corvallis, OR 97330",
-                    med_training=False, email="henry@example.org", phone="5035557777",
-                    know_nbr=False, key_nbr=False, news_ltr=False, contact=False)
+    hh7 = Household(
+        adults=3, children=0, pets=True, dogs=False,
+        crit_meds=True, ref_meds=True, special_needs=False,
+        gas_tank=False, gas_line=True,
+        adrs_number="107", adrs_street="Poplar Pl", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=True, email="hh7@example.com", phone="5553334444",
+        know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+    )
 
-    hh9 = Household(adults=4, children=3, pets=True, dogs=True, crit_meds=True,
-                    ref_meds=True, special_needs=True, gas_tank=True, gas_line=True,
-                    ad_first="369 Redwood Dr", ad_second="Albany, OR 97321",
-                    med_training=True, email="iris@example.net", phone="5038889999",
-                    know_nbr=True, key_nbr=True, news_ltr=True, contact=False)
+    hh8 = Household(
+        adults=2, children=2, pets=False, dogs=False,
+        crit_meds=False, ref_meds=False, special_needs=False,
+        gas_tank=False, gas_line=False,
+        adrs_number="108", adrs_street="Ash Ct", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=False, email=None, phone=None,
+        know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+    )
 
-    hh10 = Household(adults=2, children=1, pets=False, dogs=False, crit_meds=False,
-                     ref_meds=False, special_needs=False, gas_tank=False, gas_line=False,
-                     ad_first="159 Cypress Pl", ad_second="Lake Oswego, OR 97035",
-                     med_training=False, email="jack@example.com", phone="5034445555",
-                     know_nbr=False, key_nbr=False, news_ltr=False, contact=None)
+    hh9 = Household(
+        adults=1, children=1, pets=True, dogs=True,
+        crit_meds=False, ref_meds=False, special_needs=True,
+        gas_tank=True, gas_line=False,
+        adrs_number="109", adrs_street="Chestnut Dr", adrs_city="Springfield",
+        adrs_state="AA", adrs_zip="12345",
+        med_training=True, email="hh9@example.org", phone="5555556666",
+        know_nbr=False, key_nbr=True, news_ltr=False, contact=False
+    )
 
     dataframes = []
+    dataframes.append(hh0.to_dataframe())
     dataframes.append(hh1.to_dataframe())
     dataframes.append(hh2.to_dataframe())
     dataframes.append(hh3.to_dataframe())
@@ -299,7 +615,6 @@ def main():
 
     combined = pd.concat(dataframes)
     print(combined.to_string())
-
 
 
 if __name__ == "__main__":

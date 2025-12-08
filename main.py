@@ -5,11 +5,220 @@ Date 22 Nov 2025
 SER416 Final Project
 This is the main file of the CERT household tracker project.
 """
-
+import pprint as pp
 
 import pandas as pd
-import cli_gui
+import cli_utils as cli
 import household as hh
+from household import Household
+import sys
+
+
+# ------------------
+# Helper functions
+# ------------------
+
+def add_household_to_df(household: Household, df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Creates a dataframe object from the household, checks to see there is no household with the
+    same address string. If there is no match then it adds the new dataframe to the given dataframe
+    :param household: the Household object to add
+    :param df: the Dataframe to add it too
+    :return: updated dataframe or orginial dataframe if there was an error
+    """
+    # Convert the household to a DataFrame
+    new_row = household.to_dataframe()
+
+    # check to see that the data was valid and a dataframe was actually created
+    if new_row is None:
+        print("Error: add_household_to_df given an invalid Household object", file=sys.stderr)
+        return df  # return the dataframe unedited
+
+    # Get the address string from the new household
+    new_address = new_row.iloc[0]['address']
+
+    # Check if this address already exists in the dataframe
+    if new_address in df['address'].values:  # Duplicate address found
+        print("Error: add_household_to_df given duplicate address", file=sys.stderr)
+        return df  # return the dataframe unedited
+    else:  # add it and return the updated dataframe
+        return pd.concat([df, new_row], ignore_index=True)
+
+
+def df_to_options(df: pd.DataFrame) -> list[str]:
+    """
+    Creates a list of strings based on the address from the dataframe of household data
+    :param df:
+    :return: string of 1-line addresses
+    """
+    return df['address'].tolist()
+
+
+def get_household_from_df(address: str, df: pd.DataFrame) -> hh.Household:
+    """
+    Scans the dataframe for a household with a matching address. If one is found it returns
+    a Household object from that row
+    :param address: "[stree number] [street name]/[city],[2ltr state] [5 number zip]"
+    :param df: Dataframe built from household object data
+    :return: if match found: household object, if no match: None
+    """
+    # Find the row with the matching address
+    matching_rows = df[df['address'] == address]
+
+    if matching_rows.empty:
+        print("Error: get_household_from_df given address not in dataframe", file=sys.stderr)
+        return None
+
+    # Addresses are unqiue, so the 1st one should be the only one
+    row = matching_rows.iloc[0]
+
+    # Create a new Household object from the row data
+    household = hh.Household()
+    household.load_data(row)
+    return household
+
+
+def remove_household_from_df(address: str, df: pd.DataFrame) -> bool:
+    """
+    Scans the dataframe for a household with a matching address. If one is found it removes
+    that row from the dataframe, if no match is found then it returns False
+    :param address: "[stree number] [street name]/[city],[2ltr state] [5 number zip]"
+    :param df: Dataframe to remove row from
+    :return: if match found: true, if no match: false
+    """
+    # Find the row with the matching address
+    delete_row_indexs = df.index[df['address'] == address]
+    print(delete_row_indexs)
+
+    return False
+
+
+hh0 = Household(
+    adults=2, children=0, pets=False, dogs=False,
+    crit_meds=False, ref_meds=False, special_needs=False,
+    gas_tank=False, gas_line=False,
+    adrs_number="100", adrs_street="Maple Ave", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=None, email=None, phone=None,
+    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+)
+
+hh1 = Household(
+    adults=1, children=2, pets=True, dogs=True,
+    crit_meds=True, ref_meds=True, special_needs=False,
+    gas_tank=True, gas_line=False,
+    adrs_number="101", adrs_street="Oak St", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=True, email="hh1@example.com", phone="5551234567",
+    know_nbr=True, key_nbr=False, news_ltr=True, contact=False
+)
+
+hh2 = hh.Household(
+    adults=3, children=1, pets=False, dogs=False,
+    crit_meds=False, ref_meds=False, special_needs=True,
+    gas_tank=False, gas_line=True,
+    adrs_number="102", adrs_street="Pine Rd", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=False, email=None, phone=None,
+    know_nbr=False, key_nbr=True, news_ltr=False, contact=True
+)
+
+hh3 = hh.Household(
+    adults=2, children=3, pets=True, dogs=False,
+    crit_meds=False, ref_meds=False, special_needs=False,
+    gas_tank=False, gas_line=False,
+    adrs_number="103", adrs_street="Cedar Ln", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=None, email="hh3@example.org", phone="5559876543",
+    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+)
+
+hh4 = Household(
+    adults=1, children=0, pets=False, dogs=False,
+    crit_meds=True, ref_meds=False, special_needs=False,
+    gas_tank=False, gas_line=False,
+    adrs_number="104", adrs_street="Birch Blvd", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=True, email=None, phone=None,
+    know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+)
+
+hh5 = Household(
+    adults=4, children=2, pets=True, dogs=True,
+    crit_meds=False, ref_meds=False, special_needs=True,
+    gas_tank=True, gas_line=True,
+    adrs_number="105", adrs_street="Elm St", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=False, email="hh5@example.net", phone="5551112222",
+    know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+)
+
+hh6 = Household(
+    adults=2, children=1, pets=False, dogs=False,
+    crit_meds=False, ref_meds=False, special_needs=False,
+    gas_tank=False, gas_line=False,
+    adrs_number="106", adrs_street="Willow Way", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=None, email=None, phone=None,
+    know_nbr=None, key_nbr=None, news_ltr=None, contact=None
+)
+
+hh7 = Household(
+    adults=3, children=0, pets=True, dogs=False,
+    crit_meds=True, ref_meds=True, special_needs=False,
+    gas_tank=False, gas_line=True,
+    adrs_number="107", adrs_street="Poplar Pl", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=True, email="hh7@example.com", phone="5553334444",
+    know_nbr=False, key_nbr=False, news_ltr=False, contact=False
+)
+
+hh8 = Household(
+    adults=2, children=2, pets=False, dogs=False,
+    crit_meds=False, ref_meds=False, special_needs=False,
+    gas_tank=False, gas_line=False,
+    adrs_number="108", adrs_street="Ash Ct", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=False, email=None, phone=None,
+    know_nbr=True, key_nbr=True, news_ltr=True, contact=True
+)
+
+hh9 = Household(
+    adults=1, children=1, pets=True, dogs=True,
+    crit_meds=False, ref_meds=False, special_needs=True,
+    gas_tank=True, gas_line=False,
+    adrs_number="109", adrs_street="Chestnut Dr", adrs_city="Springfield",
+    adrs_state="AA", adrs_zip="12345",
+    med_training=True, email="hh9@example.org", phone="5555556666",
+    know_nbr=False, key_nbr=True, news_ltr=False, contact=False
+)
+
+test = hh0.to_dataframe()
+
+#print(test.to_string())
+
+test = add_household_to_df(hh1, test)
+test = add_household_to_df(hh2, test)
+test = add_household_to_df(hh3, test)
+test = add_household_to_df(hh4, test)
+test = add_household_to_df(hh5, test)
+test = add_household_to_df(hh6, test)
+test = add_household_to_df(hh7, test)
+
+print(test.to_string())
+
+options = df_to_options(test)
+
+
+#user_choice =   cli.prompt_user("Pick one:", user_options=options)
+user_choice =1
+cli.display_menu ("Pick one:", options=options, row_max=60)
+
+
+print(f"You selected #{user_choice}\n{get_household_from_df(options[user_choice], test)}")
+
+
+sys.exit(0)
 
 scr_w = 60
 
@@ -22,7 +231,7 @@ while True:
         "Exit"
     ]
 
-    user_input = cli_gui.prompt_user("Main Menu", user_options=main_options)
+    user_input = cli.prompt_user("Main Menu", user_options=main_options)
 
     print(main_options.index("Add a household"))
 
@@ -111,4 +320,3 @@ while True:
 
     if user_input == 4:
         break
-
