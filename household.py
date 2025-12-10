@@ -14,7 +14,21 @@ from cli_utils import NA
 
 
 #NA = "n/a"
-
+# ------------------
+# Static functions
+# ------------------
+def empty_dataframe() -> pd.DataFrame:
+    """
+    Makes a dataframe with just the correct column headers to hold household object data
+    :return: empty dataframe
+    """
+    columns = [
+        "address", "adults", "children", "pets", "dogs", "crit_meds", "ref_meds",
+        "special_needs", "gas_tank", "gas_line", "adrs_number", "adrs_street",
+        "adrs_city", "adrs_state", "adrs_zip", "med_training", "email", "phone",
+        "know_nbr", "key_nbr", "news_ltr", "contact"
+    ]
+    return pd.DataFrame(columns=columns)
 
 def is_valid_optional_string(x, length=None):
     """
@@ -93,6 +107,9 @@ def is_valid_bool(x):
             return True
     return False
 
+# ------------------
+# Household class
+# ------------------
 
 class Household:
     def __init__(
@@ -223,59 +240,6 @@ class Household:
         self.validated = True
         return True
 
-    def validate_data_old(self) -> bool:
-        """
-        Checks the types of all data to make sure required data is input and optional data is no wrong type
-        :return:
-        """
-        # Required data must be the correct type
-        if not isinstance(self.adults, int):
-            print(type(self.adults))
-            print(f"Validation Error: adults not int", file=sys.stderr)
-            return False
-        if not isinstance(self.children, int):
-            print(type(self.children))
-            print(f"Validation Error: children not int", file=sys.stderr)
-            return False
-        if not isinstance(self.pets, bool): return False
-        if not isinstance(self.dogs, bool): return False
-        if not isinstance(self.crit_meds, bool): return False
-        if not isinstance(self.ref_meds, bool): return False
-        if not isinstance(self.special_needs, bool): return False
-        if not isinstance(self.gas_tank, bool): return False
-        if not isinstance(self.gas_line, bool): return False
-        if not isinstance(self.adrs_number, str):
-            return False
-        elif not self.adrs_number.isnumeric():
-            return False
-        if not isinstance(self.adrs_street, str): return False
-        if not isinstance(self.adrs_city, str): return False
-        if not self.adrs_state:
-            return False
-        else:
-            if (not isinstance(self.adrs_state, str) and
-                    len(self.adrs_state) == 2 and
-                    self.adrs_state.isalpha()):
-                return False
-        if not self.adrs_zip:
-            return False
-        else:
-            if (not isinstance(self.adrs_zip, str) and
-                    len(self.adrs_zip) == 5 and
-                    self.adrs_zip.isnumeric()):
-                return False
-        # Optional data can be either null or the correct type
-        if not (isinstance(self.phone, str) or not self.phone): return False
-        if not (isinstance(self.email, str) or not self.email): return False
-        if not (isinstance(self.med_training, bool) or not self.med_training): return False
-        if not (isinstance(self.know_nbr, bool) or not self.know_nbr): return False
-        if not (isinstance(self.key_nbr, bool) or not self.key_nbr): return False
-        if not (isinstance(self.news_ltr, bool) or not self.news_ltr): return False
-        if not (isinstance(self.contact, bool) or not self.contact): return False
-        # If all checks pass update the address string and return true
-        self.adrs = f"{self.adrs_number} {self.adrs_street}/{self.adrs_city},{self.adrs_state} {self.adrs_zip}"
-        self.validated = True
-        return True
 
     #def load_dataframe(self, df: pd.DataFrame) -> bool:
     def load_data(self, series: pd.Series) -> bool:
@@ -460,6 +424,10 @@ class Household:
         }
         df = pd.DataFrame([dict])
         return df
+
+
+
+
 
 
 def main():

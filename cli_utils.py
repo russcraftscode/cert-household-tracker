@@ -229,7 +229,8 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
             if user_response.isdigit():
                 sel_number = int(user_response)
                 if sel_number > 0 and sel_number <= len(user_options):
-                    return sel_number
+                    #return sel_number
+                    return user_options[ sel_number-1]
             clear_screen()
             print("Please enter only the number of your selection with no other input")
             continue
