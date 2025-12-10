@@ -25,14 +25,13 @@ The **CERT Household Tracker** is a command‑line tool for collecting, managing
 
 ## Features
 
-- Interactive, terminal‑based menu driven UI.
+- A reusalbe, modular CLI interface library writen by me for this project, but is generic enough to be used in any CLI project. 
 - Validation of required and optional fields with clear error messages.
 - Automatic generation of a formatted address string.
 - Storage of all records in a SQLite database (`cert.db`).
 - CSV import with header validation and optional merge/overwrite handling.
 - CSV export with sanitised file names.
 - Ability to edit or delete existing household entries.
-- A reusalbe, modular CLI interface library writen by me for this project, but is generic enough to be used in any CLI project. 
 
 ---
 
@@ -96,7 +95,7 @@ This was done so that python could differentiate between not answered and false,
 2. This program is only compatible with CSV files it has created.
 3. Choose **Import CSV file** from the main menu.
 4. Select the desired file from the presented list. Only compatible files in the same directory as this program will be shown.
-5. Choose **Merge** to add only non‑duplicate records, or **Overwrite** to replace the current dataset entirely.
+5. Choose **Merge** to add only non‑duplicate records, or **Overwrite** to replace the current dataset entirely. Also, you can just hit **Enter** to cancel the import.
 
 ### Export
 
