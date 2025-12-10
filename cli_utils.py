@@ -198,7 +198,7 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
         # int format questions must be answered with a integer with no symbols
         if input_format == "int":
             if user_response.isdigit():
-                # Return the properly formatted response as an int value
+                # Return the properly formatted response
                 return user_response
             else:
                 clear_screen()
@@ -207,7 +207,7 @@ def prompt_user(query, user_options=None, input_format=None, input_length=None, 
         # int format questions must be answered with just numbers
         if input_format == "numeric":
             if user_response.isdigit():
-                # Return the properly formatted response as an int value
+                # Return the properly formatted response
                 return user_response
             else:
                 clear_screen()
