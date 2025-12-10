@@ -35,8 +35,10 @@ def display_dataframe(df: pd.DataFrame) -> None:
     """
     # hardcoded header
     col_labels = (
-            "                                                                                  Crt Ref Spc Gas Gas Med Knw Key Nws Con\n" +
-            " address                         email             phone        Adlt Kids Pts Dog Med Med Nds Tnk Ln  Tng Nbr Nbr Ltr tct "
+            "                                                         " +
+            "                         Crt Ref Spc Gas Gas Med Knw Key Nws Con\n" +
+            " address                         email             phone        " +
+            "Adlt Kids Pts Dog Med Med Nds Tnk Ln  Tng Nbr Nbr Ltr tct "
     )
     row_count, col_count = df.shape
     # exit early if no data is in the dataframe
@@ -64,6 +66,7 @@ def display_dataframe(df: pd.DataFrame) -> None:
                 'news_ltr': 1,
                 'contact': 1}
     # iterate through each entry in the dataframe
+    print("*** Displaying Currently Loaded Data *** \n")
     for row_index in range(row_count):
         # show the col headers every 10 lines
         if row_index % 10 == 0:
@@ -98,6 +101,7 @@ def display_dataframe(df: pd.DataFrame) -> None:
         print(first_line)
         if use_second_line:
             print(second_line)
+    print()  # do a line break for readability
 
 
 def df_to_options(df: pd.DataFrame) -> list[str]:
@@ -310,6 +314,7 @@ def main():
             "View households",
             "Add a household",
             "Remove a household",
+            "Edit a household",
             "Import CSV file",
             "Export CSV file",
             "Save Changes to Database",
@@ -323,6 +328,7 @@ def main():
 
         # handle main menu options
         if main_menu_choice == "View households":
+            cli.clear_screen()
             display_dataframe(household_df)
             input(f"Press enter to continue")
 
@@ -333,6 +339,7 @@ def main():
             # add that household to the active dataframe
             household_df = add_household_to_df(new_hh, household_df)
             # show updated active dataframe to user
+            cli.clear_screen()
             display_dataframe(household_df)
             input(f"Added {new_hh.get_adrs_str()}. Press enter to continue")
 
@@ -344,6 +351,7 @@ def main():
             if cli.prompt_user("Delete Selected Entry?", input_format="y/n", header=user_delete_choice):
                 household_df = remove_household_from_df(user_delete_choice, household_df)
                 # show updated active dataframe to user
+                cli.clear_screen()
                 display_dataframe(household_df)
                 input(f"Removed {user_delete_choice}. Press enter to continue")
             else:
@@ -352,7 +360,7 @@ def main():
         elif main_menu_choice == "Edit a household":
             # ask user which household to edit
             edit_options = df_to_options(household_df)
-            user_delete_choice = cli.prompt_user("Pick one to Edit:", user_options=delete_options)
+            user_delete_choice = cli.prompt_user("Pick one to Edit:", user_options=edit_options)
             # confirm user wants to edit household
             if cli.prompt_user("Edit Selected Entry?", input_format="y/n", header=user_delete_choice):
                 # delete old old household
@@ -362,8 +370,10 @@ def main():
                 new_hh.ask_questions(TERMINAL_WIDTH)
                 household_df = add_household_to_df(new_hh, household_df)
                 # show updated active dataframe to user
+                cli.clear_screen()
                 display_dataframe(household_df)
-                input(f"Updated {user_delete_choice} with new record for {new_hh.get_adrs_str()}. Press enter to continue")
+                input(
+                    f"Updated {user_delete_choice} with new record for {new_hh.get_adrs_str()}. Press enter to continue")
             else:
                 input("Edit Canceled. Press enter to continue.")
 
@@ -379,25 +389,31 @@ def main():
                 new_df = hh.empty_dataframe()
                 # prompt user for which file to read
                 user_import_choice = cli.prompt_user("Select a file", user_options=import_options, header="Import CSV")
-                new_df = pd.read_csv(user_import_choice, keep_default_na=False, na_filter=False) # supress converting "n/a" from a string
+                new_df = pd.read_csv(user_import_choice, keep_default_na=False,
+                                     na_filter=False)  # supress converting "n/a" from a string
 
                 # let user determine to merge or overwrite data
+                cli.clear_screen()
                 print("Data imported from CSV:")
                 display_dataframe(new_df)
                 merge = input("Merge new data with current data or"
                               " overwrite current data with new data? [Enter \"Merge\" or \"Overwrite\"]")
+
+                # clear console for readability
+                cli.clear_screen()
+
                 # if the user entered O then overwrite
-                if len(merge) > 0: # check that the user entered something
+                if len(merge) > 0:  # check that the user entered something
                     if merge[0].lower() == 'o':  # drop the old data and replace it with new
                         household_df = new_df
                         print(f"FILE OPERATION: Data overwritten")
                     else:
                         household_df = merge_dataframes(household_df, new_df)
                         print(f"FILE OPERATION: Data Merged")
-                else: # if no input then just cancel the import
+                else:  # if no input then just cancel the import
                     print(f"FILE OPERATION: Import Canceled")
-            display_dataframe(household_df)
-            input(f"Press enter to continue")
+                display_dataframe(household_df)
+                input(f"Press enter to continue")
 
         elif main_menu_choice == "Export CSV file":
             #Prompt user for export filename
