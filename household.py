@@ -236,7 +236,7 @@ class Household:
             return False
 
         # If all checks pass update the address string and return true
-        self.adrs = f"{self.adrs_number} {self.adrs_street}/{self.adrs_city},{self.adrs_state} {self.adrs_zip}"
+        self.adrs = f"{self.adrs_number} {self.adrs_street},{self.adrs_city},{self.adrs_state} {self.adrs_zip}"
         self.validated = True
         return True
 
@@ -303,7 +303,7 @@ class Household:
         :return: none
         """
         self.validated = False  # flag the data as unvalidated because it is changing
-        req = "Add New Household: Required Questions"
+        req = "Required Questions"
         # Ask the required questions
         self.adults = cli.prompt_user(
             "How many adults live in your household?",
@@ -314,21 +314,21 @@ class Household:
         self.pets = cli.prompt_user(
             "Do you have pets?",
             header=req, input_format="y/n", row_limit=scr_w)
-        if self.pets:
+        if self.pets != 'f':
             self.dogs = cli.prompt_user(
                 "Do you have any dogs?",
                 header=req, input_format="y/n", row_limit=scr_w)
         else:  # Cannot have dogs if there are no pets
-            self.dogs = False
+            self.dogs = 'f'
         self.crit_meds = cli.prompt_user(
             "Does anyone in the household have critical medications?",
             header=req, input_format="y/n", row_limit=scr_w)
-        if self.crit_meds:
+        if self.crit_meds != 'f':
             self.ref_meds = cli.prompt_user(
                 "Do any of these medications need to be refrigerated?",
                 header=req, input_format="y/n", row_limit=scr_w)
         else:  # Cannot have temp sensitive critical meds if there are no critical meds
-            self.ref_meds = False
+            self.ref_meds = 'f'
         self.special_needs = cli.prompt_user(
             "Does anyone in this household have special needs that would " +
             "require extra assistance in an evacuation?",
@@ -362,7 +362,7 @@ class Household:
             header=req, input_format="numeric", input_length=5, row_limit=scr_w)
 
         # optional questions
-        opt = "Add New Household: Optional Question ( Enter nothing to skip )"  # header for the optional questions
+        opt = "Optional Questions ( Enter nothing to skip )"  # header for the optional questions
         self.med_training = cli.prompt_user(
             "Does anyone in this household have medical training and would be able to render assistance in an " +
             "emergency?",

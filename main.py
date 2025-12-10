@@ -5,25 +5,21 @@ Date 22 Nov 2025
 SER416 Final Project
 This is the main file of the CERT household tracker project.
 """
-import pprint as pp
 import sqlite3
 import os
-
 import pandas as pd
 import cli_utils as cli
 from cli_utils import NA
 import household as hh
 from household import Household
 import sys
-import textwrap
+import csv
 
 # ------------------
 # Constants
 # ------------------
 
-SQLITE_FILENAME = "cert.db"  # TODO: consider making this configurable by the user
-I_CSV_FILENAME = "import.csv"  # TODO: this MUST be configurable by the user
-O_CSV_FILENAME = "output.csv"  # TODO: this MUST be configurable by the user
+SQLITE_FILENAME = "cert.db"
 TABLE_NAME = "households"
 TERMINAL_WIDTH = 60
 
@@ -46,7 +42,7 @@ def display_dataframe(df: pd.DataFrame) -> None:
     # exit early if no data is in the dataframe
     if (row_count == 0):
         print(col_labels)
-        print("No data loaded")
+        print("\n*** No data loaded ***\n")
         return
 
     # create dict of data labels and max allowed lengths
@@ -76,7 +72,7 @@ def display_dataframe(df: pd.DataFrame) -> None:
         first_line = ""
         second_line = ""
         use_second_line = False
-        # go through each column. Note, not all columns will be displayed
+        # go through each column. Note, not all columns will be displayed, this gets a little complicated
         for col_name in col_dict.keys():
             # cast the contents of that element to a string
             contents = str(df.iloc[row_index, df.columns.get_loc(col_name)])
@@ -104,13 +100,22 @@ def display_dataframe(df: pd.DataFrame) -> None:
             print(second_line)
 
 
+def df_to_options(df: pd.DataFrame) -> list[str]:
+    """
+    Creates a list of strings based on the address from the dataframe of household data
+    :param df:
+    :return: string of 1-line addresses
+    """
+    return df['address'].tolist()
+
+
 def add_household_to_df(household: Household, df: pd.DataFrame) -> pd.DataFrame:
     """
     Creates a dataframe object from the household, checks to see there is no household with the
     same address string. If there is no match then it adds the new dataframe to the given dataframe
     :param household: the Household object to add
     :param df: the Dataframe to add it too
-    :return: updated dataframe or orginial dataframe if there was an error
+    :return: updated dataframe or original dataframe if there was an error
     """
     # Convert the household to a DataFrame
     new_row = household.to_dataframe()
@@ -131,20 +136,11 @@ def add_household_to_df(household: Household, df: pd.DataFrame) -> pd.DataFrame:
         return pd.concat([df, new_row], ignore_index=True)
 
 
-def df_to_options(df: pd.DataFrame) -> list[str]:
-    """
-    Creates a list of strings based on the address from the dataframe of household data
-    :param df:
-    :return: string of 1-line addresses
-    """
-    return df['address'].tolist()
-
-
 def get_household_from_df(address: str, df: pd.DataFrame) -> Household:
     """
     Scans the dataframe for a household with a matching address. If one is found it returns
     a Household object from that row
-    :param address: "[street number] [street name]/[city],[2 letter state] [5 number zip]"
+    :param address: "[street number] [street name],[city],[2 letter state] [5 number zip]"
     :param df: Dataframe built from household object data
     :return: if match found: household object, if no match: None
     """
@@ -183,106 +179,80 @@ def remove_household_from_df(address: str, df: pd.DataFrame) -> Household:
     return df.drop(delete_row_index[0])
 
 
-# TODO: delete this debugging data
-hh0 = Household(
-    adults="2", children="0", pets="f", dogs="f",
-    crit_meds="f", ref_meds="f", special_needs="f",
-    gas_tank="f", gas_line="f",
-    adrs_number="100", adrs_street="Maple Ave", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training=NA, email=NA, phone=NA,
-    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
-)
+def merge_dataframes(df_original: pd.DataFrame, df_new: pd.DataFrame) -> pd.DataFrame:
+    """
+    Merges 2 dataframes. Checks against duplicates. Does not validate data
+    :param df_original: Dataframe to be merged into
+    :param df_new: dataframe to be merged
+    :return: merged dataframe
+    """
+    # Filter df_new to only include rows with addresses not in frame_old
+    new_rows = df_new[~df_new['address'].isin(df_original['address'])]
 
-hh1 = Household(
-    adults="1", children="2", pets="t", dogs="t",
-    crit_meds="t", ref_meds="t", special_needs="f",
-    gas_tank="t", gas_line="f",
-    adrs_number="101", adrs_street="Oak St", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="t", email="hh1@example.com", phone="5551234567",
-    know_nbr="t", key_nbr="f", news_ltr="t", contact="f"
-)
+    # Merge the dataframes
+    merged = pd.concat([df_original, new_rows], ignore_index=True)
+    return merged
 
-hh2 = Household(
-    adults="3", children="1", pets="f", dogs="f",
-    crit_meds="f", ref_meds="f", special_needs="t",
-    gas_tank="f", gas_line="t",
-    adrs_number="102", adrs_street="Pine Rd", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="f", email=NA, phone=NA,
-    know_nbr="f", key_nbr="t", news_ltr="f", contact="t"
-)
 
-hh3 = Household(
-    adults="2", children="3", pets="t", dogs="f",
-    crit_meds="f", ref_meds="f", special_needs="f",
-    gas_tank="f", gas_line="f",
-    adrs_number="103", adrs_street="Cedar Ln", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training=NA, email="coolguy42@hotmail.com", phone="5559876543",
-    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
-)
+def save_to_sql(df: pd.DataFrame) -> bool:
+    """
+    Saves household dataframe to sqlite database on hard drive
+    :param df: dataframe to save
+    :return: true if save successful
+    """
+    print("FILE OPERATION: Opening Database")
+    try:
+        # connect to sqlite database
+        db_conn = sqlite3.connect(SQLITE_FILENAME)
+        # create a table
+        print("FILE OPERATION: Writing to Database")
+        df.to_sql(TABLE_NAME, db_conn, if_exists="replace", index=False)
+        db_conn.close()
+        print("FILE OPERATION: Database Write Complete")
+        return True
+    except sqlite3.Error as e:
+        print(f"Error: could not complete write operation - {e}", file=sys.stderr)
+        db_conn.close()
+        return False
 
-hh4 = Household(
-    adults="1", children="0", pets="f", dogs="f",
-    crit_meds="t", ref_meds="f", special_needs="f",
-    gas_tank="f", gas_line="f",
-    adrs_number="104", adrs_street="Birch Blvd", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="t", email=NA, phone=NA,
-    know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
-)
 
-hh5 = Household(
-    adults="4", children="2", pets="t", dogs="t",
-    crit_meds="f", ref_meds="f", special_needs="t",
-    gas_tank="t", gas_line="t",
-    adrs_number="105", adrs_street="Elm St", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="f", email="hh5@example.net", phone="5551112222",
-    know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
-)
+def scan_for_csv() -> list[str]:
+    """
+    Scans the directory the program is in for CSV file. Checks each file for the correct headers.
+    Returns a list of valid filenames
+    :return: list of valid filenames
+    """
+    # Define headers
+    correct_headers = {
+        'address', 'adults', 'children', 'pets', 'dogs', 'crit_meds',
+        'ref_meds', 'special_needs', 'gas_tank', 'gas_line', 'adrs_number',
+        'adrs_street', 'adrs_city', 'adrs_state', 'adrs_zip', 'med_training',
+        'email', 'phone', 'know_nbr', 'key_nbr', 'news_ltr', 'contact'
+    }
 
-hh6 = Household(
-    adults="2", children="1", pets="f", dogs="f",
-    crit_meds="f", ref_meds="f", special_needs="f",
-    gas_tank="f", gas_line="f",
-    adrs_number="106", adrs_street="Willow Way", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training=NA, email=NA, phone=NA,
-    know_nbr=NA, key_nbr=NA, news_ltr=NA, contact=NA
-)
+    valid_csvs = []
 
-hh7 = Household(
-    adults="3", children="0", pets="t", dogs="f",
-    crit_meds="t", ref_meds="t", special_needs="f",
-    gas_tank="f", gas_line="t",
-    adrs_number="107", adrs_street="Poplar Pl", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="t", email="hh7@example.com", phone="5553334444",
-    know_nbr="f", key_nbr="f", news_ltr="f", contact="f"
-)
+    # Get all files in current directory
+    current_dir = os.getcwd()
+    for filename in os.listdir(current_dir):
+        # filter for file type
+        if filename.endswith('.csv'):
+            file_path = os.path.join(current_dir, filename)
+            # Check for valid headers
+            try:
+                with open(file_path, 'r', newline='', encoding='utf-8') as file:
+                    reader = csv.reader(file)
+                    headers = next(reader, None)
+                    # Check if headers exist and match
+                    if headers:
+                        header_set = {header.strip() for header in headers}
+                        if correct_headers.issubset(header_set):
+                            valid_csvs.append(filename)
 
-hh8 = Household(
-    adults="2", children="2", pets="f", dogs="f",
-    crit_meds="f", ref_meds="f", special_needs="f",
-    gas_tank="f", gas_line="f",
-    adrs_number="108", adrs_street="Ash Ct", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="f", email=NA, phone=NA,
-    know_nbr="t", key_nbr="t", news_ltr="t", contact="t"
-)
-
-hh9 = Household(
-    adults="1", children="1", pets="t", dogs="t",
-    crit_meds="f", ref_meds="f", special_needs="t",
-    gas_tank="t", gas_line="f",
-    adrs_number="109", adrs_street="Chestnut Dr", adrs_city="Springfield",
-    adrs_state="AA", adrs_zip="12345",
-    med_training="t", email="hh9@example.org", phone="5555556666",
-    know_nbr="f", key_nbr="t", news_ltr="f", contact="f"
-)
+            except (IOError, csv.Error):
+                # not an error worth reporting to the user
+                continue
+    return valid_csvs
 
 
 # ------------------
@@ -331,19 +301,9 @@ def main():
         print("Starting Up: Database Created")
         db_connection.close()
 
-    # create empty database if none exists
-
-    # load database into program's main dataframe
-
-    # TODO: replace this with reading from a database
-    household_df = add_household_to_df(hh1, household_df)
-    household_df = add_household_to_df(hh2, household_df)
-    household_df = add_household_to_df(hh3, household_df)
-    household_df = add_household_to_df(hh4, household_df)
-    household_df = add_household_to_df(hh5, household_df)
-    household_df = add_household_to_df(hh6, household_df)
-    household_df = add_household_to_df(hh7, household_df)
-
+    # ------------------
+    # Main Loop
+    # ------------------
     while True:
         # main screen
         main_menu_options = [
@@ -364,38 +324,107 @@ def main():
         # handle main menu options
         if main_menu_choice == "View households":
             display_dataframe(household_df)
-            print("*********")
-            display_dataframe(empty_df)
-
-            print()
             input(f"Press enter to continue")
 
         if main_menu_choice == "Add a household":
-            # TODO: make this add to the db, not just the df
+            # create a new household object and prompt the user to fill it out
             new_hh = Household()
             new_hh.ask_questions(TERMINAL_WIDTH)
-
+            # add that household to the active dataframe
             household_df = add_household_to_df(new_hh, household_df)
-            print(household_df.to_string())
+            # show updated active dataframe to user
+            display_dataframe(household_df)
             input(f"Added {new_hh.get_adrs_str()}. Press enter to continue")
 
         elif main_menu_choice == "Remove a household":
-            # TODO: make this remove from the db, not just the df
+            # ask user which household to delete
             delete_options = df_to_options(household_df)
             user_delete_choice = cli.prompt_user("Pick one to remove:", user_options=delete_options)
+            # confirm user wants to delete household
             if cli.prompt_user("Delete Selected Entry?", input_format="y/n", header=user_delete_choice):
                 household_df = remove_household_from_df(user_delete_choice, household_df)
-                print(household_df.to_string())
+                # show updated active dataframe to user
+                display_dataframe(household_df)
                 input(f"Removed {user_delete_choice}. Press enter to continue")
             else:
                 input("Deletion Canceled. Press enter to continue.")
 
+        elif main_menu_choice == "Edit a household":
+            # ask user which household to edit
+            edit_options = df_to_options(household_df)
+            user_delete_choice = cli.prompt_user("Pick one to Edit:", user_options=delete_options)
+            # confirm user wants to edit household
+            if cli.prompt_user("Edit Selected Entry?", input_format="y/n", header=user_delete_choice):
+                # delete old old household
+                household_df = remove_household_from_df(user_delete_choice, household_df)
+                # get edited household
+                new_hh = Household()
+                new_hh.ask_questions(TERMINAL_WIDTH)
+                household_df = add_household_to_df(new_hh, household_df)
+                # show updated active dataframe to user
+                display_dataframe(household_df)
+                input(f"Updated {user_delete_choice} with new record for {new_hh.get_adrs_str()}. Press enter to continue")
+            else:
+                input("Edit Canceled. Press enter to continue.")
+
+        elif main_menu_choice == "Import CSV file":
+            import_options = scan_for_csv()
+            # back out if there are no valid files
+            print(len(import_options))  # debug
+
+            if len(import_options) == 0:
+                input("No valid files in this directory. Press enter to continue")
+            else:
+                # create a new dataframe to hold the imported data
+                new_df = hh.empty_dataframe()
+                # prompt user for which file to read
+                user_import_choice = cli.prompt_user("Select a file", user_options=import_options, header="Import CSV")
+                new_df = pd.read_csv(user_import_choice, keep_default_na=False, na_filter=False) # supress converting "n/a" from a string
+
+                # let user determine to merge or overwrite data
+                print("Data imported from CSV:")
+                display_dataframe(new_df)
+                merge = input("Merge new data with current data or"
+                              " overwrite current data with new data? [Enter \"Merge\" or \"Overwrite\"]")
+                # if the user entered O then overwrite
+                if len(merge) > 0: # check that the user entered something
+                    if merge[0].lower() == 'o':  # drop the old data and replace it with new
+                        household_df = new_df
+                        print(f"FILE OPERATION: Data overwritten")
+                    else:
+                        household_df = merge_dataframes(household_df, new_df)
+                        print(f"FILE OPERATION: Data Merged")
+                else: # if no input then just cancel the import
+                    print(f"FILE OPERATION: Import Canceled")
+            display_dataframe(household_df)
+            input(f"Press enter to continue")
+
+        elif main_menu_choice == "Export CSV file":
+            #Prompt user for export filename
+            raw_name = cli.prompt_user("Enter the name of the file without the file extension. Use only letters and "
+                                       "numbers. No spaces or symbols.", header="Export to CSV file")
+            # remove any symbols so the filename is usable
+            stripped_name = ''.join(filter(str.isalnum, raw_name)) + ".csv"
+            # ask the user if that name is acceptable
+            if cli.prompt_user(f"Confirm: export to file {stripped_name}",
+                               header="Export to CSV file", input_format='y/n') == 't':
+                household_df.to_csv(stripped_name, index=False)
+                print(f"FILE OPERATION: Data exported to {stripped_name}")
+            else:
+                print(f"FILE OPERATION: Export Canceled")
+            input(f"Press enter to continue")
+
+        elif main_menu_choice == "Save Changes to Database":
+            save_to_sql(household_df)
+            input("Press enter to continue.")
+
         elif main_menu_choice == "Save & Exit":
-            # TODO: make an graceful exit that saves data
-            print("Changes saved to database.")
-            print("Goodbye.")
-            # db_connection close or something
-            sys.exit(0)
+            if save_to_sql(household_df):
+                print("Changes saved to database.")
+                print("Goodbye.")
+                sys.exit(0)
+            else:
+                input("Error: Could not save. Try again or exit without saving. Push enter to continue.")
 
         elif main_menu_choice == "Exit & Discard all changes":
             print("Discarding all unsaved changes and exiting. Goodbye.")
