@@ -1,0 +1,16 @@
+address,adults,children,pets,dogs,crit_meds,ref_meds,special_needs,gas_tank,gas_line,adrs_number,adrs_street,adrs_city,adrs_state,adrs_zip,med_training,email,phone,know_nbr,key_nbr,news_ltr,contact
+"123 Main St,Portland,OR 97201",2,1,t,f,f,f,f,f,f,123,Main St,Portland,OR,97201,n/a,john.doe@gmail.com,5035550123,t,f,t,f
+"456 Oak Ave,Denver,CO 80202",3,2,f,t,f,f,t,f,t,456,Oak Ave,Denver,CO,80202,n/a,mary.jones@yahoo.com,3035550456,f,t,t,t
+"789 Pine Rd,Seattle,WA 98101",1,0,f,f,t,f,f,f,f,789,Pine Rd,Seattle,WA,98101,n/a,bob.wilson@outlook.com,2065550789,t,t,f,f
+"101 Elm St,Boston,MA 02101",4,3,t,t,f,f,t,t,t,101,Elm St,Boston,MA,02101,n/a,sarah.miller@company.com,6175551234,f,f,t,t
+"202 Maple Ln,Phoenix,AZ 85001",2,1,f,f,f,t,f,f,f,202,Maple Ln,Phoenix,AZ,85001,n/a,Michael.Taylor@hotmail.com,6025555678,t,t,f,t
+"303 Cedar Blvd,Chicago,IL 60601",3,0,t,f,t,f,f,f,t,303,Cedar Blvd,Chicago,IL,60601,n/a,Emily.White@business.org,3125559012,f,t,t,f
+"404 Birch Dr,San Francisco,CA 94101",1,2,f,f,f,f,f,f,f,404,Birch Dr,San Francisco,CA,94101,n/a,David.Brown@university.edu,4155553456,t,f,f,t
+"505 Spruce St,Houston,TX 77001",2,1,t,t,f,f,t,f,t,505,Spruce St,Houston,TX,77001,n/a,Lisa.Johnson@hospital.net,7135557890,f,t,t,f
+"606 Willow Way,Atlanta,GA 30301",4,2,f,f,f,f,t,f,t,606,Willow Way,Atlanta,GA,30301,n/a,Robert.Garcia@lawfirm.com,4045552345,t,f,t,t
+"707 Poplar Pl,Washington,DC 20001",3,1,f,t,f,t,f,f,f,707,Poplar Pl,Washington,DC,20001,n/a,Jennifer.Lopez@government.gov,2025556789,f,t,f,t
+"808 Ash St,Los Angeles,CA 90001",2,0,t,f,t,f,f,f,f,808,Ash St,Los Angeles,CA,90001,n/a,Thomas.Williams@tech.com,3235551111,t,f,t,f
+"909 Cherry Ave,San Diego,CA 92101",1,1,f,f,f,f,f,f,f,909,Cherry Ave,San Diego,CA,92101,n/a,Amanda.Davis@school.edu,6195552222,f,t,f,t
+"1001 Oak Street,New York,NY 10001",3,3,t,t,f,f,t,t,t,1001,Oak Street,New York,NY,10001,n/a,Christopher.Martinez@bank.com,2125553333,t,f,t,t
+"1002 Pine Road,Baltimore,MD 21201",2,2,f,f,f,f,f,f,f,1002,Pine Road,Baltimore,MD,21201,n/a,Melissa.Rodriguez@retail.com,4105554444,f,t,f,f
+"1003 Cedar Lane,Philadelphia,PA 19101",4,1,t,f,t,f,t,f,t,1003,Cedar Lane,Philadelphia,PA,19101,n/a,Matthew.Hernandez@consulting.com,2155555555,t,t,t,f
